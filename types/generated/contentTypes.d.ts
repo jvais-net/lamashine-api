@@ -1,66 +1,5 @@
 import type { Struct, Schema } from '@strapi/strapi';
 
-export interface ApiAboutAbout extends Struct.SingleTypeSchema {
-  collectionName: 'abouts';
-  info: {
-    singularName: 'about';
-    pluralName: 'abouts';
-    displayName: 'About';
-    description: 'Write about yourself and the content you create';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    title: Schema.Attribute.String;
-    blocks: Schema.Attribute.DynamicZone<
-      ['shared.media', 'shared.quote', 'shared.rich-text', 'shared.slider']
-    >;
-    createdAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    publishedAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::about.about'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
-  collectionName: 'globals';
-  info: {
-    singularName: 'global';
-    pluralName: 'globals';
-    displayName: 'Global';
-    description: 'Define global settings';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    siteName: Schema.Attribute.String & Schema.Attribute.Required;
-    favicon: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
-    siteDescription: Schema.Attribute.Text & Schema.Attribute.Required;
-    defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
-    createdAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    publishedAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::global.global'
-    > &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Struct.CollectionTypeSchema {
   collectionName: 'files';
   info: {
@@ -556,6 +495,161 @@ export interface PluginUsersPermissionsUser
   };
 }
 
+export interface ApiAboutAbout extends Struct.SingleTypeSchema {
+  collectionName: 'abouts';
+  info: {
+    singularName: 'about';
+    pluralName: 'abouts';
+    displayName: 'About';
+    description: 'Write about yourself and the content you create';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    title: Schema.Attribute.String;
+    blocks: Schema.Attribute.DynamicZone<
+      ['shared.media', 'shared.quote', 'shared.rich-text', 'shared.slider']
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::about.about'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
+  collectionName: 'customers';
+  info: {
+    singularName: 'customer';
+    pluralName: 'customers';
+    displayName: 'Customer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    id_customer: Schema.Attribute.UID;
+    id_crisp: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::customer.customer'
+    > &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
+  collectionName: 'globals';
+  info: {
+    singularName: 'global';
+    pluralName: 'globals';
+    displayName: 'Global';
+    description: 'Define global settings';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    siteName: Schema.Attribute.String & Schema.Attribute.Required;
+    favicon: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
+    siteDescription: Schema.Attribute.Text & Schema.Attribute.Required;
+    defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::global.global'
+    > &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiMemoryMemory extends Struct.CollectionTypeSchema {
+  collectionName: 'memories';
+  info: {
+    singularName: 'memory';
+    pluralName: 'memories';
+    displayName: 'Memory';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    key: Schema.Attribute.Enumeration<['tips', 'nextsteps', 'warnings']>;
+    content: Schema.Attribute.Text;
+    customer: Schema.Attribute.Relation<'oneToOne', 'api::customer.customer'>;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::memory.memory'
+    > &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
+  collectionName: 'messages';
+  info: {
+    singularName: 'message';
+    pluralName: 'messages';
+    displayName: 'Message';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    id_message: Schema.Attribute.UID;
+    type: Schema.Attribute.Enumeration<['text', 'image', 'video']>;
+    customer: Schema.Attribute.Relation<'oneToOne', 'api::customer.customer'>;
+    from: Schema.Attribute.Enumeration<['operator', 'user']>;
+    origin: Schema.Attribute.String;
+    content: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::message.message'
+    > &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface AdminPermission extends Struct.CollectionTypeSchema {
   collectionName: 'admin_permissions';
   info: {
@@ -928,8 +1022,6 @@ export interface AdminTransferTokenPermission
 declare module '@strapi/strapi' {
   export module Public {
     export interface ContentTypeSchemas {
-      'api::about.about': ApiAboutAbout;
-      'api::global.global': ApiGlobalGlobal;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::i18n.locale': PluginI18NLocale;
@@ -940,6 +1032,11 @@ declare module '@strapi/strapi' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::about.about': ApiAboutAbout;
+      'api::customer.customer': ApiCustomerCustomer;
+      'api::global.global': ApiGlobalGlobal;
+      'api::memory.memory': ApiMemoryMemory;
+      'api::message.message': ApiMessageMessage;
       'admin::permission': AdminPermission;
       'admin::user': AdminUser;
       'admin::role': AdminRole;

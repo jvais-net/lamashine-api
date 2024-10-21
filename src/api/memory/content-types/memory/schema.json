@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "memories",
+  "info": {
+    "singularName": "memory",
+    "pluralName": "memories",
+    "displayName": "Memory",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "key": {
+      "type": "enumeration",
+      "enum": [
+        "tips",
+        "nextsteps",
+        "warnings"
+      ]
+    },
+    "content": {
+      "type": "text"
+    },
+    "customer": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::customer.customer"
+    }
+  }
+}
