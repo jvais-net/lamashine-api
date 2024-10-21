@@ -2,6 +2,7 @@
 
 module.exports = {
     async incomingMessage(ctx) {
+        console.log(true)
         const { body } = ctx.request;
 
         try {

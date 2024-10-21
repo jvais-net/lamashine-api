@@ -5,7 +5,7 @@ module.exports = {
         {
             method: 'POST',
             path: '/crisp/incoming/message',
-            handler: 'crisp.incomingMessage',
+            handler: 'api::crisp.crisp.incomingMessage',
             config: {
                 policies: [],
                 middlewares: []
