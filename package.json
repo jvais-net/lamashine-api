@@ -1,5 +1,5 @@
 {
-  "name": "api-la-mashine",
+  "name": "api-lamashine",
   "version": "0.1.0",
   "private": true,
   "description": "A Strapi application",
@@ -15,26 +15,25 @@
     "@strapi/plugin-cloud": "5.1.0",
     "@strapi/plugin-users-permissions": "5.1.0",
     "@strapi/strapi": "5.1.0",
-    "better-sqlite3": "11.4.0",
-    "fs-extra": "11.2.0",
-    "mime-types": "2.1.35",
-    "mysql2": "3.11.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-router-dom": "6.27.0",
-    "styled-components": "6.1.13"
+    "fs-extra": "^10.0.0",
+    "mime-types": "^2.1.27",
+    "mysql2": "3.9.8",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.7.7",
-    "@types/react": "18.3.11",
-    "@types/react-dom": "18.3.1",
-    "typescript": "5.6.3"
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
   },
   "engines": {
     "node": ">=18.0.0 <=22.x.x",
     "npm": ">=6.0.0"
   },
   "strapi": {
-    "uuid": "3babfaa2-0fbc-4e2e-97c9-8773dd8f43b5"
+    "uuid": "7e91f03e-9cc0-494e-b563-e1e463652eb8"
   }
 }
