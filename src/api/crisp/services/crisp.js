@@ -1,5 +1,7 @@
 'use-strict';
 
+require('dotenv').config();
+
 module.exports = {
     processMessage: async (incomingMessage) => {
         console.log('Processing incoming message', incomingMessage);
@@ -47,7 +49,34 @@ module.exports = {
             }
         })
 
-        await checkForTags(content, dbUser.id)
+        const tag = content.match(/#(\w+)/g).join('');
+
+        if (tag) {
+
+            if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
+
+                const { OpenAI } = await import('openai')
+                
+                const GPTClient = new OpenAI({
+                    apiKey: process.env.GPT_API_KEY
+                })
+                
+                const response = await GPTClient.chat.completions.create({
+                    messages: [
+                        { role: 'user', content: `Résume ça d'un manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
+                    ],
+                    model: 'gpt-4o'
+                });
+
+                await strapi.entityService.create('api::memory.memory', {
+                    data: {
+                        key: tag.replace('#', ''),
+                        content: response.choices[0].message.content,
+                        customer: dbUser.id
+                    }
+                })
+            }
+        }
     },
 
     removeMessage: async (incomingMessage) => {
@@ -55,6 +84,7 @@ module.exports = {
 
         const { session_id } = incomingMessage.data;
 
+        // @ts-ignore
         await strapi.entityService.delete('api::message.message', {
             where: {
                 id_crisp: session_id
@@ -67,6 +97,7 @@ module.exports = {
 
         const { session_id, content } = incomingMessage.data;
 
+        // @ts-ignore
         await strapi.entityService.update('api::message.message', {
             where: {
                 id_crisp: session_id
@@ -75,25 +106,5 @@ module.exports = {
                 content: content
             }
         })
-    }
-}
-
-const checkForTags = async (content, userId) => {
-    const tag = content.match(/#(\w+)/g).join('');
-
-    console.log(tag, userId)
-
-    if (tag) {
-
-        if (!['#tips', '#nextsteps', '#warnings'].includes(tag)) return;
-
-        await strapi.entityService.create('api::memory.memory', {
-            data: {
-                key: tag.replace('#', ''),
-                content: content.replace(tag, ''),
-                customer: userId
-            }
-        })
-
     }
 }
