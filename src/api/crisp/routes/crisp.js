@@ -1,4 +1,4 @@
-'use strict';
+'use-strict';
 
 module.exports = {
     routes: [
@@ -7,8 +7,8 @@ module.exports = {
             path: '/crisp/incoming/message',
             handler: 'crisp.incomingMessage',
             config: {
-                auth: false,
-            },
+                auth: false
+            }
         }
     ]
 }

@@ -1,17 +1,19 @@
-'use strict';
+'use-strict';
 
 module.exports = {
     async incomingMessage(ctx) {
-        console.log(true)
-        const { body } = ctx.request;
-
         try {
-            console.log('Incoming message:', body);
+            const incomingMessage = ctx.request.body;
 
-            ctx.send({ message: 'Message received' }, 200);
-        } catch (error) {
-            console.error('Error processing the message', error);
-            ctx.throw(500, 'Internal server error');
+            if(!incomingMessage) {
+                return ctx.badRequest('incomingMessage is required');
+            }
+
+            await strapi.service('api::crisp.crisp').processIncomingMessage(incomingMessage);
+
+            return ctx.send({ message: 'Message processed' }, 200);
+        } catch(err) {
+            return ctx.send({ error: 'An error occurred' }, 500);
         }
-    }    
+    }
 }
