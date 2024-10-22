@@ -12,9 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "id_message": {
-      "type": "uid"
-    },
     "type": {
       "type": "enumeration",
       "enum": [
@@ -39,7 +36,10 @@
       "type": "string"
     },
     "content": {
-      "type": "json"
+      "type": "text"
+    },
+    "id_crisp": {
+      "type": "string"
     }
   }
 }

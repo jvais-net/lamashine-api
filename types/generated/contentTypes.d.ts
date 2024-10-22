@@ -530,13 +530,14 @@ export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
     singularName: 'customer';
     pluralName: 'customers';
     displayName: 'Customer';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    id_customer: Schema.Attribute.UID;
     id_crisp: Schema.Attribute.String;
+    nickname: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
@@ -628,12 +629,12 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    id_message: Schema.Attribute.UID;
     type: Schema.Attribute.Enumeration<['text', 'image', 'video']>;
     customer: Schema.Attribute.Relation<'oneToOne', 'api::customer.customer'>;
     from: Schema.Attribute.Enumeration<['operator', 'user']>;
     origin: Schema.Attribute.String;
-    content: Schema.Attribute.JSON;
+    content: Schema.Attribute.Text;
+    id_crisp: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;

@@ -4,8 +4,8 @@ module.exports = {
     routes: [
         {
             method: 'POST',
-            path: '/crisp/incoming/message',
-            handler: 'crisp.incomingMessage',
+            path: '/crisp/message',
+            handler: 'crisp.processMessage',
             config: {
                 auth: false
             }
