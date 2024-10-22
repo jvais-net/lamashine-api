@@ -1,12 +1,10 @@
 'use-strict';
 
-const customer = require("../../customer/controllers/customer");
-
 module.exports = {
     processMessage: async (incomingMessage) => {
         console.log('Processing incoming message', incomingMessage);
 
-        const { type, origin, content, from, timestamp, user } = incomingMessage.data;
+        const { type, origin, content, from, fingerprint, user } = incomingMessage.data;
         const { nickname, user_id } = user;
 
         const userExist = await strapi.db.query('api::customer.customer').findOne({
@@ -30,10 +28,19 @@ module.exports = {
             }
         })
 
+        const existMessage = await strapi.db.query('api::message.message').findOne({
+            where: {
+                id_crisp: fingerprint.toString()
+            }
+        })
+
+        if (existMessage) return;
+
         await strapi.entityService.create('api::message.message', {
             data: {
                 type: type,
                 customer: dbUser.id,
+                id_crisp: fingerprint.toString(),
                 from: from,
                 origin: origin,
                 content: content,
@@ -72,36 +79,21 @@ module.exports = {
 }
 
 const checkForTags = async (content, userId) => {
-    const tag = content.match(/#(\w+)/g);
+    const tag = content.match(/#(\w+)/g).join('');
+
+    console.log(tag, userId)
 
     if (tag) {
 
-        if (!['tips', 'nextsteps', 'warnings'].includes(tag)) return;
+        if (!['#tips', '#nextsteps', '#warnings'].includes(tag)) return;
 
-        const tagExist = await strapi.db.query('api::memory.memory').findOne({
-            where: {
+        await strapi.entityService.create('api::memory.memory', {
+            data: {
+                key: tag.replace('#', ''),
+                content: content.replace(tag, ''),
                 customer: userId
             }
         })
 
-        if (!tagExist) {
-            await strapi.entityService.create('api::memory.memory', {
-                data: {
-                    key: tag,
-                    content: content.replace(tag, ''),
-                    customer: userId
-                }
-            })
-        } else {
-            await strapi.entityService.update('api::memory.memory', {
-                where: {
-                    key: tag,
-                    customer: userId
-                },
-                data: {
-                    content: content.replace(tag, '')
-                }
-            })
-        }
     }
 }

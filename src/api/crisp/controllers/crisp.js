@@ -12,19 +12,15 @@ module.exports = {
 
             switch (message.event) {
                 case 'message:send':
-                    console.log('Processing incoming message', message);
                     await strapi.service('api::crisp.crisp').processMessage(message);
                     break;
                 case 'message:received':
-                    console.log('Processing outgoing message', message);
                     await strapi.service('api::crisp.crisp').processMessage(message);
                     break;
                 case 'message:removed':
-                    console.log('Processing removed message', message);
                     await strapi.service('api::crisp.crisp').removeMessage(message);
                     break;
                 case 'message:updated':
-                    console.log('Processing updated message', message);
                     await strapi.service('api::crisp.crisp').updateMessage(message);
                     break;
             }
