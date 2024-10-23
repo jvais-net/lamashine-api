@@ -63,7 +63,7 @@ module.exports = {
                 
                 const response = await GPTClient.chat.completions.create({
                     messages: [
-                        { role: 'user', content: `Résume ça d'un manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
+                        { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
                     ],
                     model: 'gpt-4o'
                 });
