@@ -55,6 +55,7 @@ module.exports = {
 
             if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
 
+                // @ts-ignore
                 const { OpenAI } = await import('openai')
                 
                 const GPTClient = new OpenAI({
