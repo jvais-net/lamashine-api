@@ -107,5 +107,40 @@ module.exports = {
                 content: content
             }
         })
+    },
+
+    processReminder: async () => {
+        try {
+            const customers = await strapi.db.query('api::customer.customer').find();
+
+            for (const customer of customers) {
+                const customerId = customer.id;
+
+                const messages = await strapi.entityService.findMany('api::message.message', {
+                    filters: {
+                        customer: customerId,
+                        from: 'user'
+                    },
+                    sort: { createdAt: 'desc' },
+                    fields: ['createdAt'],
+                    populate: { customer: true }
+                });
+
+                if(messages.length > 0) {
+                    const lastMessage = messages[0];
+                    const lastMessageDate = new Date(lastMessage.createdAt);
+                    const currentDate = new Date();
+
+                    const differenceInTime = currentDate.getTime() - lastMessageDate.getTime();
+                    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+                    if (differenceInDays >= 3) {
+                        console.log();
+                    }
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 }

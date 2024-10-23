@@ -1,7 +1,7 @@
 'use-strict';
 
 module.exports = {
-    async processMessage(ctx) {
+    processMessage: async (ctx) => {
         try {
             const message = ctx.request.body;
 
@@ -26,6 +26,16 @@ module.exports = {
             }
 
             return ctx.send({ message: 'Message processed' }, 200);
+        } catch (err) {
+            return ctx.send(err, 500);
+        }
+    },
+
+    processReminder: async (ctx) => {
+        try {
+            await strapi.service('api::crisp.crisp').processReminder();
+
+            return ctx.send({ message: 'Reminder processed' }, 200);
         } catch (err) {
             return ctx.send(err, 500);
         }
