@@ -23,7 +23,7 @@
     "content": {
       "type": "text"
     },
-    "customer": {
+    "id_customer": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::customer.customer"

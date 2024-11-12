@@ -600,7 +600,10 @@ export interface ApiMemoryMemory extends Struct.CollectionTypeSchema {
   attributes: {
     key: Schema.Attribute.Enumeration<['tips', 'nextsteps', 'warnings']>;
     content: Schema.Attribute.Text;
-    customer: Schema.Attribute.Relation<'oneToOne', 'api::customer.customer'>;
+    id_customer: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::customer.customer'
+    >;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
