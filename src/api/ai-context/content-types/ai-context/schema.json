@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ai_contexts",
+  "info": {
+    "singularName": "ai-context",
+    "pluralName": "ai-contexts",
+    "displayName": "Ai_Context"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "instruction": {
+      "type": "text"
+    }
+  }
+}
