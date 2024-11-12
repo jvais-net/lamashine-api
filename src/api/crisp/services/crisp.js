@@ -130,7 +130,7 @@ module.exports = {
 
                 const messages = await strapi.entityService.findMany('api::message.message', {
                     filters: {
-                        customer: customerId,
+                        id_customer: customerId,
                         from: 'user'
                     },
                     sort: { createdAt: 'desc' },
@@ -167,7 +167,7 @@ module.exports = {
                             const nextstep = await strapi.db.query('memory.memory').findOne({
                                 where: {
                                     key: 'nextsteps',
-                                    customer: customerId
+                                    id_customer: customerId
                                 },
 
                                 orderBy: {
