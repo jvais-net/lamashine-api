@@ -2,6 +2,15 @@
 
 require('dotenv').config();
 
+const brevo = require('sib-api-v3-sdk');
+
+const defaultClient = brevo.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+
+apiKey.apiKey = process.env.BREVO_API_KEY;
+
+const Mailer = new brevo.EmailCampaignsApi();
+
 module.exports = {
     processMessage: async (incomingMessage) => {
         try {
@@ -24,13 +33,119 @@ module.exports = {
             });
 
             // Si le client n'existe pas, le créer
-            if (!dbUser) {
+            if (!dbUser && !String(user_id).startsWith('session')) {
                 dbUser = await strapi.entityService.create('api::customer.customer', {
                     data: {
                         id_crisp: user_id,
                         nickname: nickname
                     }
                 });
+            } else if (String(user_id).startsWith('session') && !String(user_id).match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${session_id}/message`, {
+                    method: 'POST',
+                    headers: {
+                        "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                        "X-Crisp-Tier": "plugin"
+                    },
+                    body: JSON.stringify({
+                        type: 'text',
+                        from: 'operator',
+                        origin: 'chat',
+                        content: "Veuillez renseigner votre adresse email pour continuer la conversation."
+                    })
+                })
+            } else if (String(user_id).startsWith('session') && String(user_id).match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                const customerAccountExists = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/people/profile/${content}`, {
+                    method: 'GET'
+                })
+
+                if (customerAccountExists.status === 200) {
+
+                    const newConversation = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation`, {
+                        method: 'POST',
+                        headers: {
+                            "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                            "X-Crisp-Tier": "plugin"
+                        }
+                    })
+
+                    if (newConversation.status === 201) {
+                        const MailCampaign = new brevo.CreateEmailCampaign();
+                        const conversationId = (await newConversation.json()).data.session_id;
+
+                        const email = content;
+
+                        MailCampaign.name = "LaMashine";
+                        MailCampaign.subject = "LaMashine - Discussion";
+                        MailCampaign.sender = {
+                            "name": "LaMashine",
+                            "email": "chat@lamashine.com"
+                        }
+                        MailCampaign.type = "classic";
+                        MailCampaign.htmlContent = `<p>Bonjour, <br>Vous avez commencé une discussion avec nous sur notre site. Pour continuer la discussion, veuillez cliquer sur le lien suivant : <a href="https://chat.lamashine.com?crisp_sid=${conversationId}">Continuer la discussion</a></p>`;
+
+                        MailCampaign.recipients = [{
+                            "email": email
+                        }];
+
+                        try {
+                            const response = await Mailer.createEmailCampaign(MailCampaign);
+                            console.log(response);
+                        } catch (error) {
+                            console.error('Error sending email:', error);
+                        }
+                    }
+
+                } else {
+                    const customerAccountCreated = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/people/profile`, {
+                        method: 'POST',
+                        headers: {
+                            "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                            "X-Crisp-Tier": "plugin"
+                        },
+                        body: JSON.stringify({
+                            email: content,
+                            nickname: nickname
+                        })
+                    })
+
+                    if (customerAccountCreated.status === 200) {
+                        const newConversation = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation`, {
+                            method: 'POST',
+                            headers: {
+                                "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                                "X-Crisp-Tier": "plugin"
+                            }
+                        })
+
+                        if (newConversation.status === 201) {
+                            const MailCampaign = new brevo.CreateEmailCampaign();
+                            const conversationId = (await newConversation.json()).data.session_id;
+
+                            const email = content;
+
+                            MailCampaign.name = "LaMashine";
+                            MailCampaign.subject = "LaMashine - Discussion";
+                            MailCampaign.sender = {
+                                "name": "LaMashine",
+                                "email": "chat@lamashine.com"
+                            }
+                            MailCampaign.type = "classic";
+                            MailCampaign.htmlContent = `<p>Bonjour, <br>Vous avez commencé une discussion avec nous sur notre site. Pour continuer la discussion, veuillez cliquer sur le lien suivant : <a href="https://chat.lamashine.com?crisp_sid=${conversationId}">Continuer la discussion</a></p>`;
+
+                            MailCampaign.recipients = [{
+                                "email": email
+                            }];
+
+                            try {
+                                const response = await Mailer.createEmailCampaign(MailCampaign);
+                                console.log(response);
+                            } catch (error) {
+                                console.error('Error sending email:', error);
+                            }
+                        }
+                    }
+                }
             }
 
             // Vérifier si le message existe déjà
