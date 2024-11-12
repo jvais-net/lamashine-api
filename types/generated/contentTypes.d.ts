@@ -630,11 +630,15 @@ export interface ApiMessageMessage extends Struct.CollectionTypeSchema {
   };
   attributes: {
     type: Schema.Attribute.Enumeration<['text', 'image', 'video']>;
-    customer: Schema.Attribute.Relation<'oneToOne', 'api::customer.customer'>;
+    id_customer: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::customer.customer'
+    >;
     from: Schema.Attribute.Enumeration<['operator', 'user']>;
     origin: Schema.Attribute.String;
     content: Schema.Attribute.Text;
-    id_crisp: Schema.Attribute.String;
+    crisp_fingerprint: Schema.Attribute.String;
+    crisp_session_id: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;

@@ -7,7 +7,7 @@ module.exports = {
         try {
             console.log('Processing incoming message', incomingMessage);
 
-            const { type, origin, content, from, fingerprint, user } = incomingMessage.data;
+            const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
             const { nickname, user_id } = user;
 
             // Vérifier que les champs requis sont présents
@@ -36,7 +36,7 @@ module.exports = {
             // Vérifier si le message existe déjà
             const existMessage = await strapi.db.query('api::message.message').findOne({
                 where: {
-                    id_crisp: fingerprint.toString()
+                    crisp_fingerprint: fingerprint.toString()
                 }
             });
 
@@ -46,8 +46,9 @@ module.exports = {
             await strapi.entityService.create('api::message.message', {
                 data: {
                     type: type,
-                    customer: dbUser.id,
-                    id_crisp: fingerprint.toString(),
+                    id_customer: dbUser.id,
+                    crisp_fingerprint: fingerprint.toString(),
+                    crisp_session_id: session_id,
                     from: from,
                     origin: origin,
                     content: content,
@@ -68,18 +69,18 @@ module.exports = {
                         apiKey: process.env.GPT_API_KEY
                     });
 
-                    const response = await GPTClient.chat.completions.create({
+                    const response = (await GPTClient.chat.completions.create({
                         messages: [
                             { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
                         ],
                         model: 'gpt-4'
-                    });
+                    })).choices[0].message.content;
 
                     await strapi.entityService.create('api::memory.memory', {
                         data: {
                             key: tag.replace('#', ''),
-                            content: response.choices[0].message.content,
-                            customer: dbUser.id
+                            content: response,
+                            id_customer: dbUser.id
                         }
                     });
                 }
@@ -152,6 +153,75 @@ module.exports = {
                         const GPTClient = new OpenAI({
                             apiKey: process.env.GPT_API_KEY
                         });
+
+                        const conversationExists = (await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}`, {
+                            headers: {
+                                "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                                "X-Crisp-Tier": "plugin"
+                            }
+                        }
+                        )).status === 200;
+
+                        if (conversationExists) {
+
+                            const nextstep = await strapi.db.query('memory.memory').findOne({
+                                where: {
+                                    key: 'nextsteps',
+                                    customer: customerId
+                                },
+
+                                orderBy: {
+                                    createdAt: 'desc'
+                                }
+                            });
+
+                            if (nextstep) {
+                                const response = (await GPTClient.chat.completions.create({
+                                    messages: [
+                                        { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
+                                    ],
+                                    model: 'gpt-4'
+                                })).choices[0].message.content;
+
+                                try {
+                                    await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
+                                        method: 'POST',
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                                            "X-Crisp-Tier": "plugin"
+                                        },
+                                        body: JSON.stringify({
+                                            type: 'text',
+                                            from: 'operator',
+                                            origin: 'chat',
+                                            content: response
+                                        })
+                                    })
+                                } catch (error) {
+                                    console.error('Error sending message:', error);
+                                }
+                            } else {
+                                try {
+                                    await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
+                                        method: 'POST',
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                                            "X-Crisp-Tier": "plugin"
+                                        },
+                                        body: JSON.stringify({
+                                            type: 'text',
+                                            from: 'operator',
+                                            origin: 'chat',
+                                            content: "Bonjour ! Je voulais savoir si vous aviez eu le temps d'avancer sur notre projet. N'hésitez pas à me dire si vous avez besoin de quoi que ce soit. Bonne journée !"
+                                        })
+                                    })
+                                } catch (error) {
+                                    console.error('Error sending message:', error);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -159,4 +229,4 @@ module.exports = {
             console.log(error);
         }
     }
-}
+};
