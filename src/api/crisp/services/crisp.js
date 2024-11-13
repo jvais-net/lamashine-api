@@ -13,7 +13,7 @@ apiKey.apiKey = process.env.BREVO_API_KEY;
 const CrispClient = new Crisp();
 const Mailer = new brevo.EmailCampaignsApi();
 
-CrispClient.authenticate(process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
+CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
 const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
 
