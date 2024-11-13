@@ -47,15 +47,13 @@ module.exports = {
                 }
             } else if (isContentEmail) {
                 try {
-                    let customerAccountExists;
+                    const peoplesList = await CrispClient.website.listPeopleProfiles(process.env.CRISP_WEBSITE_ID, 1, {
+                        search: content
+                    });
 
-                    try {
-                        customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
-                    } catch (error) {
-                        console.error('Error checking if customer account exists:', error);
-                    }
+                    const customerAccountExists = peoplesList.length > 0 ? peoplesList[0] : null;
 
-                    if (customerAccountExists.status !== 200) {
+                    if (customerAccountExists) {
                         try {
                             const newProfile = await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                                 email: content,
