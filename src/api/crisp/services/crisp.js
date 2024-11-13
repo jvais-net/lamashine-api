@@ -47,7 +47,13 @@ module.exports = {
                 }
             } else if (isContentEmail) {
                 try {
-                    const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
+                    let customerAccountExists;
+
+                    try {
+                        customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
+                    } catch (error) {
+                        console.error('Error checking if customer account exists:', error);
+                    }
 
                     if (customerAccountExists.status !== 200) {
                         try {
