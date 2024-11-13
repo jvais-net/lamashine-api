@@ -114,7 +114,7 @@ module.exports = {
                         console.log('Addind message from user to conversation');
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
                             type: 'text',
-                            content: content,
+                            content: "Bonjour ! Je teste le chat.",
                             from: "user",
                             origin: "chat"
                         });
