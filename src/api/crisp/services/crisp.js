@@ -130,16 +130,18 @@ module.exports = {
                             }
                         }
 
-                        // const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
+                        const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
 
-                        // await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
-                        //     participants: [
-                        //         {
-                        //             type: 'email',
-                        //             target: content
-                        //         }
-                        //     ]
-                        // })
+                        console.log(newConversation);
+
+                        await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
+                            participants: [
+                                {
+                                    type: 'email',
+                                    target: content
+                                }
+                            ]
+                        })
 
                         //envoie mail brevo avec template
                         await brevoInstance.sendTransacEmail({
@@ -149,7 +151,7 @@ module.exports = {
                             }],
                             templateId: 1,
                             params: {
-                                chatlink: `https://chat.lamashine.com?crisp_sid=test`
+                                chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
                             }
                         })
 
