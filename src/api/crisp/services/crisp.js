@@ -27,61 +27,142 @@ module.exports = {
             const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
             const { nickname, user_id } = user;
 
-            if (from === 'user') {
-                const isContentEmail = isEmail(content);
-
-                if (!isContentEmail) {
-                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                        type: 'text',
-                        content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
-                        from: "operator",
-                        origin: "chat"
-                    });
-                } else if (isContentEmail) {
-                    const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
-
-                    if (customerAccountExists.status !== 200) {
-                        await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
-                            email: content,
-                            person: {
-                                nickname: nickname,
-                            }
-                        })
-                    }
-
-                    const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
-
-                    await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
-                        participants: [
-                            {
-                                type: 'email',
-                                target: content
-                            }
-                        ]
-                    })
-
-                    //envoie mail brevo avec template
-                    await brevoInstance.sendTransacEmail({
-                        to: [{
-                            email: content,
-                            name: nickname
-                        }],
-                        templateId: 1,
-                        params: {
-                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
-                        }
-                    })
-
-
-                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                        type: 'text',
-                        content: "Un email vous a été envoyé pour continuer la conversation.",
-                        from: "operator",
-                        origin: "chat"
-                    });
-                }
+            if (!user_id || !nickname) {
+                console.error('User ID or nickname is missing');
+                return;
             }
 
+            const UserDB = await strapi.entityService.findOne('api::customer.customer', {
+                id_crisp: user_id
+            });
+
+            if (UserDB) {
+                const existMessage = await strapi.db.query('api::message.message').findOne({
+                    where: {
+                        crisp_fingerprint: fingerprint.toString()
+                    }
+                });
+            
+                if (existMessage) return;
+            
+                // Créer le message
+                await strapi.entityService.create('api::message.message', {
+                    data: {
+                        type: type,
+                        id_customer: UserDB.id,
+                        crisp_fingerprint: fingerprint.toString(),
+                        crisp_session_id: session_id,
+                        from: from,
+                        origin: origin,
+                        content: content,
+                    }
+                });
+            
+                // Extraire le tag du contenu du message
+                const matches = content.match(/#(\w+)/g);
+                const tag = matches ? matches.join('') : null;
+            
+                if (tag) {
+                    if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
+            
+                        // @ts-ignore
+                        const { OpenAI } = await import('openai');
+            
+                        const GPTClient = new OpenAI({
+                            apiKey: process.env.GPT_API_KEY
+                        });
+            
+                        const response = (await GPTClient.chat.completions.create({
+                            messages: [
+                                { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
+                            ],
+                            model: 'gpt-4'
+                        })).choices[0].message.content;
+            
+                        await strapi.entityService.create('api::memory.memory', {
+                            data: {
+                                key: tag.replace('#', ''),
+                                content: response,
+                                id_customer: UserDB.id ?? user_id
+                            }
+                        });
+                    }
+                }
+            } else {
+
+                if (from === 'user') {
+                    const isContentEmail = isEmail(content);
+
+                    if (!isContentEmail) {
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                            type: 'text',
+                            content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
+                            from: "operator",
+                            origin: "chat"
+                        });
+                    } else if (isContentEmail) {
+                        const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
+
+                        if (customerAccountExists.status !== 200) {
+                            const newProfile = await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
+                                email: content,
+                                person: {
+                                    nickname: nickname,
+                                }
+                            })
+
+                            await strapi.entityService.create('api::customer.customer', {
+                                id_crisp: newProfile.people_id,
+                                email: content,
+                                nickname: nickname
+                            })
+                        } else {
+                            const customerInDb = await strapi.entityService.findOne('api::customer.customer', {
+                                id_crisp: customerAccountExists.data.people_id
+                            });
+
+                            if (!customerInDb) {
+                                await strapi.entityService.create('api::customer.customer', {
+                                    id_crisp: customerAccountExists.data.people_id,
+                                    email: content,
+                                    nickname: nickname
+                                })
+                            }
+                        }
+
+                        // const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
+
+                        // await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
+                        //     participants: [
+                        //         {
+                        //             type: 'email',
+                        //             target: content
+                        //         }
+                        //     ]
+                        // })
+
+                        //envoie mail brevo avec template
+                        await brevoInstance.sendTransacEmail({
+                            to: [{
+                                email: content,
+                                name: nickname
+                            }],
+                            templateId: 1,
+                            params: {
+                                chatlink: `https://chat.lamashine.com?crisp_sid=test`
+                            }
+                        })
+
+
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                            type: 'text',
+                            content: "Un email vous a été envoyé pour continuer la conversation.",
+                            from: "operator",
+                            origin: "chat"
+                        });
+                    }
+                }
+            }
 
         } catch (error) {
             console.error('Error processing incoming message:', error);
