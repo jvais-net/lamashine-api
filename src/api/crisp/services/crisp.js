@@ -29,31 +29,31 @@ module.exports = {
                 const isContentEmail = isEmail(content);
 
                 if (!isContentEmail) {
-                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, JSON.stringify({
                         type: 'text',
                         content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
                         from: "operator",
                         origin: "chat"
-                    });
+                    }));
                 } else if (isContentEmail) {
                     const customerAccountExists = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/people/profile/${content}`, {
                         method: 'GET'
                     })
 
                     if (customerAccountExists.status === 200) {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, JSON.stringify({
                             type: 'text',
                             content: "Votre compte a été trouvé. Nous allons vous connecter.",
                             from: "operator",
                             origin: "chat"
-                        });
+                        }));
                     } else {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, JSON.stringify({
                             type: 'text',
                             content: "Votre compte n'a pas été trouvé. Nous allons vous créer un compte.",
                             from: "operator",
                             origin: "chat"
-                        });
+                        }));
                     }
                 }
             }
