@@ -157,11 +157,13 @@ module.exports = {
 
             if (existMessage) return;
 
+            console.log(dbUser)
+
             // Créer le message
             await strapi.entityService.create('api::message.message', {
                 data: {
                     type: type,
-                    id_customer: dbUser.id ?? user_id,
+                    id_customer: dbUser.id,
                     crisp_fingerprint: fingerprint.toString(),
                     crisp_session_id: session_id,
                     from: from,
