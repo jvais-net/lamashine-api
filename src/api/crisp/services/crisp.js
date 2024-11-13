@@ -27,7 +27,7 @@ const sendMessage = async (message, session_id) => {
         })
     });
 
-    console.log('Message sent and get status code: ', messageReq.status);
+    console.log(`Message sent and get status code: ${messageReq.status} with message ${messageReq.statusText}`);
 }
 
 module.exports = {
