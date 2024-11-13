@@ -132,9 +132,7 @@ module.exports = {
 
                         const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
 
-                        console.log(newConversation);
-
-                        await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
+                        await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
                             participants: [
                                 {
                                     type: 'email',
