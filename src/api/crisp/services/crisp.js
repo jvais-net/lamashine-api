@@ -13,7 +13,7 @@ const Mailer = new brevo.EmailCampaignsApi();
 
 const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
 const sendMessage = async (message, session_id) => {
-    fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${session_id}/message`, {
+    const messageReq = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${session_id}/message`, {
         method: 'POST',
         headers: {
             "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
@@ -25,7 +25,9 @@ const sendMessage = async (message, session_id) => {
             origin: 'chat',
             content: message
         })
-    })
+    });
+
+    console.log('Message sent and get status code: ', messageReq.status);
 }
 
 module.exports = {
