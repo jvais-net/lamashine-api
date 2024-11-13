@@ -32,63 +32,63 @@ module.exports = {
                 return;
             }
 
-            const UserDB = await strapi.entityService.findOne('api::customer.customer', {
-                id_crisp: user_id
-            });
+            // const UserDB = await strapi.entityService.findOne('api::customer.customer', {
+            //     id_crisp: user_id
+            // });
 
-            if (UserDB) {
-                const existMessage = await strapi.db.query('api::message.message').findOne({
-                    where: {
-                        crisp_fingerprint: fingerprint.toString()
-                    }
-                });
+            // if (UserDB) {
+            //     const existMessage = await strapi.db.query('api::message.message').findOne({
+            //         where: {
+            //             crisp_fingerprint: fingerprint.toString()
+            //         }
+            //     });
             
-                if (existMessage) return;
+            //     if (existMessage) return;
             
-                // Créer le message
-                await strapi.entityService.create('api::message.message', {
-                    data: {
-                        type: type,
-                        id_customer: UserDB.id,
-                        crisp_fingerprint: fingerprint.toString(),
-                        crisp_session_id: session_id,
-                        from: from,
-                        origin: origin,
-                        content: content,
-                    }
-                });
+            //     // Créer le message
+            //     await strapi.entityService.create('api::message.message', {
+            //         data: {
+            //             type: type,
+            //             id_customer: UserDB.id,
+            //             crisp_fingerprint: fingerprint.toString(),
+            //             crisp_session_id: session_id,
+            //             from: from,
+            //             origin: origin,
+            //             content: content,
+            //         }
+            //     });
             
-                // Extraire le tag du contenu du message
-                const matches = content.match(/#(\w+)/g);
-                const tag = matches ? matches.join('') : null;
+            //     // Extraire le tag du contenu du message
+            //     const matches = content.match(/#(\w+)/g);
+            //     const tag = matches ? matches.join('') : null;
             
-                if (tag) {
-                    if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
+            //     if (tag) {
+            //         if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
             
-                        // @ts-ignore
-                        const { OpenAI } = await import('openai');
+            //             // @ts-ignore
+            //             const { OpenAI } = await import('openai');
             
-                        const GPTClient = new OpenAI({
-                            apiKey: process.env.GPT_API_KEY
-                        });
+            //             const GPTClient = new OpenAI({
+            //                 apiKey: process.env.GPT_API_KEY
+            //             });
             
-                        const response = (await GPTClient.chat.completions.create({
-                            messages: [
-                                { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
-                            ],
-                            model: 'gpt-4'
-                        })).choices[0].message.content;
+            //             const response = (await GPTClient.chat.completions.create({
+            //                 messages: [
+            //                     { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
+            //                 ],
+            //                 model: 'gpt-4'
+            //             })).choices[0].message.content;
             
-                        await strapi.entityService.create('api::memory.memory', {
-                            data: {
-                                key: tag.replace('#', ''),
-                                content: response,
-                                id_customer: UserDB.id ?? user_id
-                            }
-                        });
-                    }
-                }
-            } else {
+            //             await strapi.entityService.create('api::memory.memory', {
+            //                 data: {
+            //                     key: tag.replace('#', ''),
+            //                     content: response,
+            //                     id_customer: UserDB.id ?? user_id
+            //                 }
+            //             });
+            //         }
+            //     }
+            // } else {
 
                 if (from === 'user') {
                     const isContentEmail = isEmail(content);
@@ -162,7 +162,7 @@ module.exports = {
                         });
                     }
                 }
-            }
+            // }
 
         } catch (error) {
             console.error('Error processing incoming message:', error);
