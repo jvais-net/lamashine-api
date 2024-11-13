@@ -195,7 +195,7 @@ module.exports = {
                         data: {
                             key: tag.replace('#', ''),
                             content: response,
-                            id_customer: dbUser.id
+                            id_customer: dbUser.id ?? user_id
                         }
                     });
                 }
