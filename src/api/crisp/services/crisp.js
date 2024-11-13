@@ -5,14 +5,17 @@ require('dotenv').config();
 const brevo = require('@getbrevo/brevo');
 const Crisp = require('crisp-api');
 
+// @ts-ignore
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const CrispClient = new Crisp();
+// @ts-ignore
 const brevoInstance = new brevo.TransactionalEmailsApi();
 
+// @ts-ignore
 const Mailer = new brevo.SendSmtpEmail();
 
 CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
@@ -23,6 +26,7 @@ module.exports = {
     processMessage: async (incomingMessage) => {
         console.log('Processing incoming message', incomingMessage);
 
+        // @ts-ignore
         const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
         const { nickname, user_id } = user;
 
