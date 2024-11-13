@@ -17,6 +17,9 @@
     },
     "nickname": {
       "type": "string"
+    },
+    "email": {
+      "type": "string"
     }
   }
 }

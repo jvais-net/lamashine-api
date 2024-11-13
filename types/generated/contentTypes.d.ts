@@ -566,6 +566,7 @@ export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
   attributes: {
     id_crisp: Schema.Attribute.String;
     nickname: Schema.Attribute.String;
+    email: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
