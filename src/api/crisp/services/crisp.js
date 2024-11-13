@@ -21,102 +21,53 @@ const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
 
 module.exports = {
     processMessage: async (incomingMessage) => {
-        try {
-            console.log('Processing incoming message', incomingMessage);
+        console.log('Processing incoming message', incomingMessage);
 
-            const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
-            const { nickname, user_id } = user;
+        const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
+        const { nickname, user_id } = user;
 
-            if (!user_id || !nickname) {
-                console.error('User ID or nickname is missing');
-                return;
-            }
+        if (!user_id || !nickname) {
+            console.error('User ID or nickname is missing');
+            return;
+        }
 
-            // const UserDB = await strapi.entityService.findOne('api::customer.customer', {
-            //     id_crisp: user_id
-            // });
+        if (from === 'user') {
+            const isContentEmail = isEmail(content);
 
-            // if (UserDB) {
-            //     const existMessage = await strapi.db.query('api::message.message').findOne({
-            //         where: {
-            //             crisp_fingerprint: fingerprint.toString()
-            //         }
-            //     });
-            
-            //     if (existMessage) return;
-            
-            //     // Créer le message
-            //     await strapi.entityService.create('api::message.message', {
-            //         data: {
-            //             type: type,
-            //             id_customer: UserDB.id,
-            //             crisp_fingerprint: fingerprint.toString(),
-            //             crisp_session_id: session_id,
-            //             from: from,
-            //             origin: origin,
-            //             content: content,
-            //         }
-            //     });
-            
-            //     // Extraire le tag du contenu du message
-            //     const matches = content.match(/#(\w+)/g);
-            //     const tag = matches ? matches.join('') : null;
-            
-            //     if (tag) {
-            //         if (['#tips', '#nextsteps', '#warnings'].includes(tag)) {
-            
-            //             // @ts-ignore
-            //             const { OpenAI } = await import('openai');
-            
-            //             const GPTClient = new OpenAI({
-            //                 apiKey: process.env.GPT_API_KEY
-            //             });
-            
-            //             const response = (await GPTClient.chat.completions.create({
-            //                 messages: [
-            //                     { role: 'user', content: `Résume ça d'une manière simple à comprendre, courte et précise : ${content.replace(tag, '')}` }
-            //                 ],
-            //                 model: 'gpt-4'
-            //             })).choices[0].message.content;
-            
-            //             await strapi.entityService.create('api::memory.memory', {
-            //                 data: {
-            //                     key: tag.replace('#', ''),
-            //                     content: response,
-            //                     id_customer: UserDB.id ?? user_id
-            //                 }
-            //             });
-            //         }
-            //     }
-            // } else {
+            if (!isContentEmail) {
+                try {
+                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                        type: 'text',
+                        content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
+                        from: "operator",
+                        origin: "chat"
+                    });
+                } catch (error) {
+                    console.error('Error sending message in conversation:', error);
+                }
+            } else if (isContentEmail) {
+                try {
+                    const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
 
-                if (from === 'user') {
-                    const isContentEmail = isEmail(content);
-
-                    if (!isContentEmail) {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                            type: 'text',
-                            content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
-                            from: "operator",
-                            origin: "chat"
-                        });
-                    } else if (isContentEmail) {
-                        const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
-
-                        if (customerAccountExists.status !== 200) {
+                    if (customerAccountExists.status !== 200) {
+                        try {
                             const newProfile = await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                                 email: content,
                                 person: {
                                     nickname: nickname,
                                 }
-                            })
+                            });
 
                             await strapi.entityService.create('api::customer.customer', {
                                 id_crisp: newProfile.people_id,
                                 email: content,
                                 nickname: nickname
-                            })
-                        } else {
+                            });
+                        } catch (error) {
+                            console.error('Error adding new people profile:', error);
+                        }
+                    } else {
+                        try {
                             const customerInDb = await strapi.entityService.findOne('api::customer.customer', {
                                 id_crisp: customerAccountExists.data.people_id
                             });
@@ -126,10 +77,14 @@ module.exports = {
                                     id_crisp: customerAccountExists.data.people_id,
                                     email: content,
                                     nickname: nickname
-                                })
+                                });
                             }
+                        } catch (error) {
+                            console.error('Error finding customer in database:', error);
                         }
+                    }
 
+                    try {
                         console.log('Creating new conversation');
                         const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
 
@@ -141,7 +96,7 @@ module.exports = {
                                     target: content
                                 }
                             ]
-                        })
+                        });
 
                         //envoie mail brevo avec template
                         await brevoInstance.sendTransacEmail({
@@ -153,8 +108,7 @@ module.exports = {
                             params: {
                                 chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
                             }
-                        })
-
+                        });
 
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                             type: 'text',
@@ -162,12 +116,13 @@ module.exports = {
                             from: "operator",
                             origin: "chat"
                         });
+                    } catch (error) {
+                        console.error('Error creating new conversation or sending email:', error);
                     }
+                } catch (error) {
+                    console.error('Error processing email content:', error);
                 }
-            // }
-
-        } catch (error) {
-            console.error('Error processing incoming message:', error);
+            }
         }
     },
 
@@ -176,12 +131,15 @@ module.exports = {
 
         const { session_id } = incomingMessage.data;
 
-        // @ts-ignore
-        await strapi.entityService.delete('api::message.message', {
-            where: {
-                id_crisp: session_id
-            }
-        })
+        try {
+            await strapi.entityService.delete('api::message.message', {
+                where: {
+                    id_crisp: session_id
+                }
+            });
+        } catch (error) {
+            console.error('Error removing message:', error);
+        }
     },
 
     updateMessage: async (incomingMessage) => {
@@ -189,15 +147,18 @@ module.exports = {
 
         const { session_id, content } = incomingMessage.data;
 
-        // @ts-ignore
-        await strapi.entityService.update('api::message.message', {
-            where: {
-                id_crisp: session_id
-            },
-            data: {
-                content: content
-            }
-        })
+        try {
+            await strapi.entityService.update('api::message.message', {
+                where: {
+                    id_crisp: session_id
+                },
+                data: {
+                    content: content
+                }
+            });
+        } catch (error) {
+            console.error('Error updating message:', error);
+        }
     },
 
     processReminder: async () => {
@@ -235,20 +196,17 @@ module.exports = {
 
                         const conversationExists = (await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}`, {
                             headers: {
-                                "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+                                "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
                                 "X-Crisp-Tier": "plugin"
                             }
-                        }
-                        )).status === 200;
+                        })).status === 200;
 
                         if (conversationExists) {
-
                             const nextstep = await strapi.db.query('memory.memory').findOne({
                                 where: {
                                     key: 'nextsteps',
                                     id_customer: customerId
                                 },
-
                                 orderBy: {
                                     createdAt: 'desc'
                                 }
@@ -276,7 +234,7 @@ module.exports = {
                                             origin: 'chat',
                                             content: response
                                         })
-                                    })
+                                    });
                                 } catch (error) {
                                     console.error('Error sending message:', error);
                                 }
@@ -295,7 +253,7 @@ module.exports = {
                                             origin: 'chat',
                                             content: "Bonjour ! Je voulais savoir si vous aviez eu le temps d'avancer sur notre projet. N'hésitez pas à me dire si vous avez besoin de quoi que ce soit. Bonne journée !"
                                         })
-                                    })
+                                    });
                                 } catch (error) {
                                     console.error('Error sending message:', error);
                                 }
