@@ -63,9 +63,11 @@ module.exports = {
                             console.log(newProfile.people_id, content, nickname);
 
                             await strapi.entityService.create('api::customer.customer', {
-                                id_crisp: newProfile.people_id,
-                                email: content,
-                                nickname: nickname
+                                data: {
+                                    id_crisp: newProfile.people_id,
+                                    email: content,
+                                    nickname: nickname
+                                }
                             });
                         } catch (error) {
                             console.error('Error adding new people profile:', error);
