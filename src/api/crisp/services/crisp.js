@@ -75,7 +75,7 @@ module.exports = {
                     } else {
                         try {
                             const customerInDb = await strapi.entityService.findOne('api::customer.customer', {
-                                filters: {
+                                where: {
                                     id_crisp: customerAccountExists.people_id
                                 }
                             });
