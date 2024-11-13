@@ -47,9 +47,7 @@ module.exports = {
                 }
             } else if (isContentEmail) {
                 try {
-                    const peoplesList = await CrispClient.website.listPeopleProfiles(process.env.CRISP_WEBSITE_ID, 1, {
-                        search: content
-                    });
+                    const peoplesList = await CrispClient.website.listPeopleProfiles(process.env.CRISP_WEBSITE_ID, 1, 'email', null, null, null, content);
 
                     const customerAccountExists = peoplesList.length > 0 ? peoplesList[0] : null;
 
