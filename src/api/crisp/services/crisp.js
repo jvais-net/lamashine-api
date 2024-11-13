@@ -74,7 +74,7 @@ module.exports = {
                         }
                     } else {
                         try {
-                            const customerInDb = await strapi.entityService.findOne('api::customer.customer', {
+                            const customerInDb = await strapi.db.query('api::customer.customer').findOne({
                                 where: {
                                     id_crisp: customerAccountExists.people_id
                                 }
