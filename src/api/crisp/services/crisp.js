@@ -38,10 +38,8 @@ module.exports = {
                         origin: "chat"
                     });
                 } else if (isContentEmail) {
-                    const customerAccountExists = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/people/profile/${content}`, {
-                        method: 'GET'
-                    })
-
+                    const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
+                    
                     if (customerAccountExists.status !== 200) {
                         await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                             email: content,
