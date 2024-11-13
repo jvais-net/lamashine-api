@@ -61,7 +61,7 @@ module.exports = {
                     })
 
                     //envoie mail brevo avec template
-                    const mail = await brevoInstance.sendTransacEmail({
+                    await brevoInstance.sendTransacEmail({
                         to: [{
                             email: content,
                             name: nickname
@@ -71,8 +71,6 @@ module.exports = {
                             chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
                         }
                     })
-
-                    brevoInstance.sendTransacEmail(mail)
 
 
                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
