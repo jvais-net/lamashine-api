@@ -51,7 +51,7 @@ module.exports = {
 
                     const customerAccountExists = peoplesList.length > 0 ? peoplesList[0] : null;
 
-                    if (customerAccountExists) {
+                    if (!customerAccountExists) {
                         try {
                             const newProfile = await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                                 email: content,
@@ -219,7 +219,8 @@ module.exports = {
                                     messages: [
                                         { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
                                     ],
-                                    model: 'gpt-4'
+                                    model: 'gpt-4',
+                                    
                                 })).choices[0].message.content;
 
                                 try {
