@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const brevo = require('@getbrevo/brevo');
+const brevo = require('sib-api-v3-sdk');
 const Crisp = require('crisp-api');
 
 // @ts-ignore
