@@ -111,7 +111,7 @@ module.exports = {
                             origin: "chat"
                         });
 
-                        console.log('Addind message from user to conversation');
+                        console.log('Adding message from user to conversation');
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
                             type: 'text',
                             content: "Bonjour ! Je teste le chat.",
@@ -145,6 +145,8 @@ module.exports = {
                             from: "operator",
                             origin: "chat"
                         });
+
+                        await CrispClient.website.removeConversation(process.env.CRISP_WEBSITE_ID, session_id);
                     } catch (error) {
                         console.error('Error creating new conversation or sending email:', error);
                     }
