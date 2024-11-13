@@ -148,6 +148,12 @@ module.exports = {
                 }
             }
 
+            dbUser = await strapi.db.query('api::customer.customer').findOne({
+                where: {
+                    id_crisp: user_id
+                }
+            });
+
             // Vérifier si le message existe déjà
             const existMessage = await strapi.db.query('api::message.message').findOne({
                 where: {
@@ -156,8 +162,6 @@ module.exports = {
             });
 
             if (existMessage) return;
-
-            console.log(dbUser)
 
             // Créer le message
             await strapi.entityService.create('api::message.message', {
