@@ -11,7 +11,9 @@ const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const CrispClient = new Crisp();
-const Mailer = new brevo.EmailCampaignsApi();
+const brevoInstance = new brevo.TransactionalEmailsApi();
+
+const Mailer = new brevo.SendSmtpEmail();
 
 CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
@@ -40,21 +42,45 @@ module.exports = {
                         method: 'GET'
                     })
 
-                    if (customerAccountExists.status === 200) {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                            type: 'text',
-                            content: "Votre compte a été trouvé. Nous allons vous connecter.",
-                            from: "operator",
-                            origin: "chat"
-                        });
-                    } else {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                            type: 'text',
-                            content: "Votre compte n'a pas été trouvé. Nous allons vous créer un compte.",
-                            from: "operator",
-                            origin: "chat"
-                        });
+                    if (customerAccountExists.status !== 200) {
+                        await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
+                            email: content,
+                            person: {
+                                nickname: nickname,
+                            }
+                        })
                     }
+
+                    const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
+
+                    await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
+                        participants: [
+                            {
+                                type: 'user',
+                                target: content
+                            }
+                        ]
+                    })
+
+                    //envoie mail brevo avec template
+                    const mail = await brevoInstance.sendTransacEmail({
+                        to: [{
+                            email: content,
+                            name: nickname
+                        }],
+                        templateId: 1,
+                        params: {
+                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
+                        }
+                    })
+
+
+                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                        type: 'text',
+                        content: "Un email vous a été envoyé pour continuer la conversation.",
+                        from: "operator",
+                        origin: "chat"
+                    });
                 }
             }
 
