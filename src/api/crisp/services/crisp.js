@@ -75,14 +75,18 @@ module.exports = {
                     } else {
                         try {
                             const customerInDb = await strapi.entityService.findOne('api::customer.customer', {
-                                id_crisp: customerAccountExists.people_id
+                                filters: {
+                                    id_crisp: customerAccountExists.people_id
+                                }
                             });
 
                             if (!customerInDb) {
                                 await strapi.entityService.create('api::customer.customer', {
-                                    id_crisp: customerAccountExists.people_id,
-                                    email: content,
-                                    nickname: nickname
+                                    data: {
+                                        id_crisp: customerAccountExists.people_id,
+                                        email: content,
+                                        nickname: nickname
+                                    }
                                 });
                             }
                         } catch (error) {
