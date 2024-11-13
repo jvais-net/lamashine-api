@@ -3,32 +3,19 @@
 require('dotenv').config();
 
 const brevo = require('sib-api-v3-sdk');
+const Crisp = require('crisp-api');
 
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
+const CrispClient = new Crisp();
 const Mailer = new brevo.EmailCampaignsApi();
 
-const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
-const sendMessage = async (message, session_id) => {
-    const messageReq = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${session_id}/message`, {
-        method: 'POST',
-        headers: {
-            "Autorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
-            "X-Crisp-Tier": "plugin"
-        },
-        body: JSON.stringify({
-            type: 'text',
-            from: 'operator',
-            origin: 'chat',
-            content: message
-        })
-    });
+CrispClient.authenticate(process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
-    console.log(`Message sent and get status code: ${messageReq.status} with message ${messageReq.statusText}`);
-}
+const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
 
 module.exports = {
     processMessage: async (incomingMessage) => {
@@ -42,16 +29,31 @@ module.exports = {
                 const isContentEmail = isEmail(content);
 
                 if (!isContentEmail) {
-                    await sendMessage("Veuillez renseigner votre adresse email pour continuer la conversation.", session_id);
+                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                        type: 'text',
+                        content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
+                        from: "operator",
+                        origin: "chat"
+                    });
                 } else if (isContentEmail) {
                     const customerAccountExists = await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/people/profile/${content}`, {
                         method: 'GET'
                     })
 
                     if (customerAccountExists.status === 200) {
-                        await sendMessage("Votre compte a bien été trouvé. Comment puis-je vous aider ?", session_id);
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                            type: 'text',
+                            content: "Votre compte a été trouvé. Nous allons vous connecter.",
+                            from: "operator",
+                            origin: "chat"
+                        });
                     } else {
-                        await sendMessage("Votre compte n'a pas été trouvé. Création en cours", session_id);
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                            type: 'text',
+                            content: "Votre compte n'a pas été trouvé. Nous allons vous créer un compte.",
+                            from: "operator",
+                            origin: "chat"
+                        });
                     }
                 }
             }
