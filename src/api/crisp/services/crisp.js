@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const brevo = require('sib-api-v3-sdk');
+const brevo = require('@getbrevo/brevo');
 const Crisp = require('crisp-api');
 
 const defaultClient = brevo.ApiClient.instance;
@@ -105,16 +105,23 @@ module.exports = {
                         });
 
                         //envoie mail brevo avec template
-                        await brevoInstance.sendTransacEmail({
-                            to: [{
-                                email: content,
-                                name: nickname
-                            }],
-                            templateId: 1,
-                            params: {
-                                chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
-                            }
-                        });
+
+                        Mailer.to = [{
+                            email: content,
+                            name: nickname
+                        }];
+                        Mailer.templateId = 1;
+                        Mailer.params = {
+                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
+                        }
+
+                        try {
+                            await brevoInstance.sendTransacEmail(Mailer);
+
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${newConversation.id}`);
+                        } catch (error) {
+                            console.error('Error sending email:', error);
+                        }
 
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                             type: 'text',
@@ -224,7 +231,7 @@ module.exports = {
                                         { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
                                     ],
                                     model: 'gpt-4',
-                                    
+
                                 })).choices[0].message.content;
 
                                 try {
