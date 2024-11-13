@@ -72,6 +72,8 @@ module.exports = {
                         }
                     })
 
+                    brevoInstance.sendTransacEmail(mail)
+
 
                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                         type: 'text',
