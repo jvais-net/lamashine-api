@@ -39,7 +39,7 @@ module.exports = {
                     });
                 } else if (isContentEmail) {
                     const customerAccountExists = await CrispClient.website.checkPeopleProfileExists(process.env.CRISP_WEBSITE_ID, content);
-                    
+
                     if (customerAccountExists.status !== 200) {
                         await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                             email: content,
@@ -54,7 +54,7 @@ module.exports = {
                     await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.id, {
                         participants: [
                             {
-                                type: 'user',
+                                type: 'email',
                                 target: content
                             }
                         ]
