@@ -116,13 +116,13 @@ module.exports = {
                         }];
                         Mailer.templateId = 1;
                         Mailer.params = {
-                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.id}`
+                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`
                         }
 
                         try {
                             await brevoInstance.sendTransacEmail(Mailer);
 
-                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${newConversation.id}`);
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`);
                         } catch (error) {
                             console.error('Error sending email:', error);
                         }
