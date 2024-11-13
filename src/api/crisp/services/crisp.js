@@ -5,18 +5,14 @@ require('dotenv').config();
 const brevo = require('sib-api-v3-sdk');
 const Crisp = require('crisp-api');
 
-// @ts-ignore
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const CrispClient = new Crisp();
-// @ts-ignore
-const brevoInstance = new brevo.TransactionalEmailsApi();
 
-// @ts-ignore
-const Mailer = new brevo.SendSmtpEmail();
+const brevoInstance = new brevo.TransactionalEmailsApi();
 
 CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
@@ -26,7 +22,6 @@ module.exports = {
     processMessage: async (incomingMessage) => {
         console.log('Processing incoming message', incomingMessage);
 
-        // @ts-ignore
         const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
         const { nickname, user_id } = user;
 
@@ -110,17 +105,18 @@ module.exports = {
 
                         //envoie mail brevo avec template
 
-                        Mailer.to = [{
+                        const mailer = new brevo.SendSmtpEmail();
+                        mailer.to = [{
                             email: content,
                             name: nickname
                         }];
-                        Mailer.templateId = 1;
-                        Mailer.params = {
+                        mailer.templateId = 1;
+                        mailer.params = {
                             chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`
                         }
 
                         try {
-                            await brevoInstance.sendTransacEmail(Mailer);
+                            await brevoInstance.sendTransacEmail(mailer);
 
                             console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`);
                         } catch (error) {
