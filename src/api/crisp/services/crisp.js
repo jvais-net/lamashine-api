@@ -161,7 +161,7 @@ module.exports = {
             await strapi.entityService.create('api::message.message', {
                 data: {
                     type: type,
-                    id_customer: dbUser.id,
+                    id_customer: dbUser.id ?? user_id,
                     crisp_fingerprint: fingerprint.toString(),
                     crisp_session_id: session_id,
                     from: from,
