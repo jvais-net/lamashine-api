@@ -60,6 +60,8 @@ module.exports = {
                                 }
                             });
 
+                            console.log(newProfile)
+
                             await strapi.entityService.create('api::customer.customer', {
                                 id_crisp: newProfile.people_id,
                                 email: content,
