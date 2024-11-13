@@ -99,13 +99,9 @@ module.exports = {
                         const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
 
                         console.log('Adding participants to conversation', content);
-                        await CrispClient.website.saveConversationParticipants(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
-                            participants: [
-                                {
-                                    type: 'email',
-                                    target: content
-                                }
-                            ]
+                        await CrispClient.website.updateConversationMetas(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
+                            nickname: nickname,
+                            email: content
                         });
 
                         //envoie mail brevo avec template
