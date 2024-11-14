@@ -248,6 +248,8 @@ module.exports = {
                                 const messages = await GPTClient.beta.threads.messages.list(thread.id);
                                 const resMessage = messages.data[0].content[0];
 
+                                console.log("Response message", resMessage);
+
                                 await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                                     type: 'text',
                                     content: resMessage,
