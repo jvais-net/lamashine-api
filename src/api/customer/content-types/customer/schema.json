@@ -20,6 +20,11 @@
     },
     "email": {
       "type": "string"
+    },
+    "ai_context": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ai-context.ai-context"
     }
   }
 }

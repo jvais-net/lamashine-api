@@ -77,13 +77,13 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`
+                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}&sid=${session_id}`
                         }
 
                         try {
                             await brevoInstance.sendTransacEmail(mailer);
 
-                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`);
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}&sid=${session_id}`);
                         } catch (error) {
                             console.error('Error sending email:', error);
                         }
@@ -110,12 +110,13 @@ module.exports = {
                         }
                     });
 
-                    if(!customerExists) {
+                    if (!customerExists) {
                         await strapi.entityService.create('api::customer.customer', {
                             data: {
                                 id_crisp: user_id,
                                 email: content,
-                                nickname: nickname
+                                nickname: nickname,
+                                ai_context: 1
                             }
                         });
                     }
@@ -138,6 +139,40 @@ module.exports = {
                                 origin: origin,
                             }
                         });
+
+                        const existingMessages = await strapi.db.query("api::message.message").findMany({
+                            where: {
+                                crisp_session_id: session_id
+                            },
+                            orderBy: { createdAt: "asc" },
+                        });
+
+                        // Construire le contexte de la conversation pour OpenAI
+                        const messages = existingMessages.map((msg) => ({
+                            role: msg.role,
+                            content: msg.content,
+                        }));
+
+                        // Ajouter le message utilisateur au contexte
+                        messages.push({ role: "user", content: content });
+
+                        // @ts-ignore
+                        const { OpenAI } = await import('openai');
+
+                        const GPTClient = new OpenAI({
+                            apiKey: process.env.GPT_API_KEY
+                        });
+
+                        // Envoyer la requête à OpenAI
+                        const response = (await GPTClient.chat.completions.create({
+                            messages: [
+                                { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
+                            ],
+                            model: 'gpt-4',
+
+                        })).choices[0].message.content;
+
+                        const assistantMessage = response.data.choices[0].message.content;
                     }
                 } catch (error) {
                     console.error('Error processing authenticated message:', error);
