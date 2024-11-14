@@ -208,7 +208,10 @@ module.exports = {
                                         content: content
                                     });
 
-                                    let run;
+                                    let run = await GPTClient.beta.threads.runs.create(thread.id, {
+                                        assistant_id: assistant.id
+                                    });
+                                    
                                     do {
                                         run = await GPTClient.beta.threads.runs.retrieve(thread.id, run?.id);
                                     } while (run.status !== "completed");
