@@ -77,7 +77,7 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}&sid=${session_id}`
+                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`
                         }
 
                         try {
@@ -218,7 +218,7 @@ module.exports = {
 
                                     const messages = await GPTClient.beta.threads.messages.list(thread.id);
                                     // @ts-ignore
-                                    const resMessage = messages.data[messages.data.length - 1].content[0].text.value;
+                                    const resMessage = messages.data[0].content[0].text.value;
 
                                     console.log("Response message", resMessage);
 
