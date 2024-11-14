@@ -34,8 +34,9 @@ module.exports = {
 
         if (from === 'user') {
             const isContentEmail = isEmail(content);
+            const isAuthenticated = await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id);
 
-            if (!isContentEmail) {
+            if (!isContentEmail && !isAuthenticated) {
                 try {
                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                         type: 'text',
@@ -46,7 +47,7 @@ module.exports = {
                 } catch (error) {
                     console.error('Error sending message in conversation:', error);
                 }
-            } else if (isContentEmail) {
+            } else if (isContentEmail && !isAuthenticated) {
                 try {
                     const peoplesList = await CrispClient.website.listPeopleProfiles(process.env.CRISP_WEBSITE_ID, 1, 'email', null, null, null, content);
 
@@ -60,38 +61,8 @@ module.exports = {
                                     nickname: nickname,
                                 }
                             });
-
-                            console.log(newProfile.people_id, content, nickname);
-
-                            await strapi.entityService.create('api::customer.customer', {
-                                data: {
-                                    id_crisp: newProfile.people_id,
-                                    email: content,
-                                    nickname: nickname
-                                }
-                            });
                         } catch (error) {
                             console.error('Error adding new people profile:', error);
-                        }
-                    } else {
-                        try {
-                            const customerInDb = await strapi.db.query('api::customer.customer').findOne({
-                                where: {
-                                    id_crisp: customerAccountExists.people_id
-                                }
-                            });
-
-                            if (!customerInDb) {
-                                await strapi.entityService.create('api::customer.customer', {
-                                    data: {
-                                        id_crisp: customerAccountExists.people_id,
-                                        email: content,
-                                        nickname: nickname
-                                    }
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error finding customer in database:', error);
                         }
                     }
 
@@ -129,6 +100,44 @@ module.exports = {
                     }
                 } catch (error) {
                     console.error('Error processing email content:', error);
+                }
+            } else if (isAuthenticated) {
+                try {
+                    const customerExists = await strapi.db.query('api::customer.customer').findOne({
+                        where: {
+                            id_crisp: user_id
+                        }
+                    });
+
+                    if(!customerExists) {
+                        await strapi.entityService.create('api::customer.customer', {
+                            data: {
+                                id_crisp: user_id,
+                                email: content,
+                                nickname: nickname
+                            }
+                        });
+                    }
+
+                    const customer = await strapi.db.query('api::customer.customer').findOne({
+                        where: {
+                            id_crisp: user_id
+                        }
+                    });
+
+                    if (customer) {
+                        await strapi.entityService.create('api::message.message', {
+                            data: {
+                                id_crisp: session_id,
+                                content: content,
+                                from: from,
+                                origin: origin,
+                                id_customer: customer.id
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error processing authenticated message:', error);
                 }
             }
         }
