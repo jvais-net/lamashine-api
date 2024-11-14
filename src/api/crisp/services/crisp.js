@@ -211,13 +211,14 @@ module.exports = {
                                     let run = await GPTClient.beta.threads.runs.create(thread.id, {
                                         assistant_id: assistant.id
                                     });
-                                    
+
                                     do {
                                         run = await GPTClient.beta.threads.runs.retrieve(thread.id, run?.id);
                                     } while (run.status !== "completed");
 
                                     const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                                    const resMessage = messages.data[messages.data.length - 1].content[0];
+                                    // @ts-ignore
+                                    const resMessage = messages.data[messages.data.length - 1].content[0].text.value;
 
                                     console.log("Response message", resMessage);
 
