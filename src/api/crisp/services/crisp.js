@@ -177,7 +177,16 @@ module.exports = {
                                         instructions: context.content,
                                     })
 
-                                    const message = await GPTClient.beta.threads.messages.create(thread.id, {
+                                    await strapi.entityService.update('api::ai_thread::ai_thread', {
+                                        where: {
+                                            openai_thread_id: thread.id
+                                        },
+                                        data: {
+                                            openai_assistant_id: assistant.id
+                                        }
+                                    });
+
+                                    await GPTClient.beta.threads.messages.create(thread.id, {
                                         role: 'user',
                                         content: content
                                     });
@@ -201,6 +210,31 @@ module.exports = {
                                     })
                                 }
                             }
+                        } else {
+                            const thread = await GPTClient.beta.threads.retrieve(threadInDb.openai_thread_id);
+
+                            await GPTClient.beta.threads.messages.create(thread.id, {
+                                role: 'user',
+                                content: content
+                            });
+
+                            let run = await GPTClient.beta.threads.runs.create(thread.id, {
+                                assistant_id: threadInDb.openai_assistant_id,
+                            })
+
+                            while(run.status !== "completed") {
+                                run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                            }
+
+                            const messages = await GPTClient.beta.threads.messages.list(thread.id);
+                            const resMessage = messages.data[0].content[0];
+
+                            await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                                type: 'text',
+                                content: resMessage,
+                                from: 'operator',
+                                origin: 'chat'
+                            })
                         }
                     }
                 } catch (error) {
