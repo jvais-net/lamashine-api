@@ -4,7 +4,8 @@
   "info": {
     "singularName": "ai-thread",
     "pluralName": "ai-threads",
-    "displayName": "Ai_Thread"
+    "displayName": "Ai_Thread",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -15,6 +16,9 @@
       "type": "string"
     },
     "openai_thread_id": {
+      "type": "string"
+    },
+    "openai_assistant_id": {
       "type": "string"
     }
   }

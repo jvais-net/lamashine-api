@@ -558,6 +558,7 @@ export interface ApiAiThreadAiThread extends Struct.CollectionTypeSchema {
     singularName: 'ai-thread';
     pluralName: 'ai-threads';
     displayName: 'Ai_Thread';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -565,6 +566,7 @@ export interface ApiAiThreadAiThread extends Struct.CollectionTypeSchema {
   attributes: {
     crisp_session_id: Schema.Attribute.String;
     openai_thread_id: Schema.Attribute.String;
+    openai_assistant_id: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
