@@ -6,6 +6,7 @@ const brevo = require('sib-api-v3-sdk');
 const Crisp = require('crisp-api');
 
 const { v4: uuidv4 } = require('uuid');
+const crisp = require('../controllers/crisp');
 
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
@@ -128,11 +129,13 @@ module.exports = {
                     if (customer) {
                         await strapi.entityService.create('api::message.message', {
                             data: {
-                                id_crisp: session_id,
-                                content: content,
+                                type: type,
                                 from: from,
+                                id_customer: customer.id,
+                                content: content,
+                                crisp_fingerprint: fingerprint,
+                                crisp_session_id: session_id,
                                 origin: origin,
-                                id_customer: customer.id
                             }
                         });
                     }
