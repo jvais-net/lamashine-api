@@ -157,13 +157,6 @@ module.exports = {
                         if(!threadInDb) {
                             const thread = await GPTClient.beta.threads.create();
 
-                            await strapi.entityService.create('api::ai-thread.ai-thread', {
-                                data: {
-                                    openai_thread_id: thread.id,
-                                    crisp_session_id: session_id
-                                }
-                            });
-
                             if(customer.ai_context) {
                                 const context = await strapi.db.query('api::ai-context.ai-context').findOne({
                                     where: {
@@ -177,11 +170,10 @@ module.exports = {
                                         instructions: context.content,
                                     })
 
-                                    await strapi.entityService.update('api::ai-thread.ai-thread', {
-                                        where: {
-                                            openai_thread_id: thread.id
-                                        },
+                                    await strapi.entityService.create('api::ai-thread.ai-thread', {
                                         data: {
+                                            openai_thread_id: thread.id,
+                                            crisp_session_id: session_id,
                                             openai_assistant_id: assistant.id
                                         }
                                     });
