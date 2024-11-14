@@ -5,6 +5,8 @@ require('dotenv').config();
 const brevo = require('sib-api-v3-sdk');
 const Crisp = require('crisp-api');
 
+const { v4: uuidv4 } = require('uuid');
+
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 
@@ -92,19 +94,8 @@ module.exports = {
                             console.error('Error finding customer in database:', error);
                         }
                     }
-
+                    
                     try {
-                        console.log('Creating new conversation');
-                        const newConversation = await CrispClient.website.createNewConversation(process.env.CRISP_WEBSITE_ID);
-
-                        console.log('Adding participants to conversation', content);
-                        await CrispClient.website.updateConversationMetas(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
-                            nickname: nickname,
-                            email: content
-                        });
-
-                        //envoie mail brevo avec template
-
                         const mailer = new brevo.SendSmtpEmail();
                         mailer.to = [{
                             email: content,
@@ -112,13 +103,13 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`
+                            chatlink: `https://chat.lamashine.com?crisp_sid=${}`
                         }
 
                         try {
                             await brevoInstance.sendTransacEmail(mailer);
 
-                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${newConversation.session_id}`);
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${uuidv4()}`);
                         } catch (error) {
                             console.error('Error sending email:', error);
                         }
