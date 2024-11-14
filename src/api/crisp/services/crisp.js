@@ -148,7 +148,7 @@ module.exports = {
                             apiKey: process.env.GPT_API_KEY
                         });
 
-                        const threadInDb = await strapi.db.query('api::ai_thread::ai_thread').findOne({
+                        const threadInDb = await strapi.db.query('api::ai_thread.ai_thread').findOne({
                             where: {
                                 crisp_session_id: session_id
                             }
@@ -157,7 +157,7 @@ module.exports = {
                         if(!threadInDb) {
                             const thread = await GPTClient.beta.threads.create();
 
-                            await strapi.entityService.create('api::ai_thread::ai_thread', {
+                            await strapi.entityService.create('api::ai_thread.ai_thread', {
                                 data: {
                                     openai_thread_id: thread.id,
                                     crisp_session_id: session_id
@@ -165,7 +165,7 @@ module.exports = {
                             });
 
                             if(customer.ai_context) {
-                                const context = await strapi.db.query('api::ai_context::ai_context').findOne({
+                                const context = await strapi.db.query('api::ai_context.ai_context').findOne({
                                     where: {
                                         id: customer.ai_context
                                     }
@@ -177,7 +177,7 @@ module.exports = {
                                         instructions: context.content,
                                     })
 
-                                    await strapi.entityService.update('api::ai_thread::ai_thread', {
+                                    await strapi.entityService.update('api::ai_thread.ai_thread', {
                                         where: {
                                             openai_thread_id: thread.id
                                         },
