@@ -91,7 +91,7 @@ module.exports = {
 
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                             type: 'text',
-                            content: "Merci ! Tu vasrecevoir un e-mail avec un lien te permettant de continuer la conversation. Pense à vérifier tes spams.",
+                            content: "Merci ! Tu vas recevoir un e-mail avec un lien te permettant de continuer la conversation. Pense à vérifier tes spams.",
                             from: "operator",
                             origin: "chat"
                         });
