@@ -77,7 +77,7 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`
+                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}&sid=${session_id}`
                         }
 
                         try {
