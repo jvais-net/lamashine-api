@@ -23,8 +23,6 @@ const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
 
 module.exports = {
     processMessage: async (incomingMessage) => {
-        console.log('Processing incoming message', incomingMessage);
-
         const { type, origin, content, from, fingerprint, session_id, user } = incomingMessage.data;
         const { nickname, user_id } = user;
 
@@ -189,6 +187,8 @@ module.exports = {
                         if (!threadInDb) {
                             try {
                                 const thread = await GPTClient.beta.threads.create();
+
+                                console.log(customer.ai_context);
 
                                 if (customer.ai_context) {
                                     console.log("Context exists in customer", customer.ai_context);
