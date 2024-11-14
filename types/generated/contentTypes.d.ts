@@ -536,6 +536,7 @@ export interface ApiAiContextAiContext extends Struct.CollectionTypeSchema {
   };
   attributes: {
     instruction: Schema.Attribute.Text;
+    customers: Schema.Attribute.Relation<'oneToMany', 'api::customer.customer'>;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
@@ -599,7 +600,7 @@ export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
     nickname: Schema.Attribute.String;
     email: Schema.Attribute.String;
     ai_context: Schema.Attribute.Relation<
-      'oneToOne',
+      'manyToOne',
       'api::ai-context.ai-context'
     >;
     createdAt: Schema.Attribute.DateTime;

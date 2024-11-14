@@ -13,6 +13,12 @@
   "attributes": {
     "instruction": {
       "type": "text"
+    },
+    "customers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::customer.customer",
+      "mappedBy": "ai_context"
     }
   }
 }

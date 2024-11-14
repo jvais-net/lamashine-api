@@ -111,12 +111,20 @@ module.exports = {
                         }
                     });
 
+                    const isContentEmail = isEmail(content);
+
+                    let email = content;
+
+                    if(!isContentEmail) {
+                        email = (await CrispClient.website.getPeopleProfile(process.env.CRISP_WEBSITE_ID, user_id)).email;
+                    }
+
                     if (!customerExists) {
                         try {
                             await strapi.entityService.create('api::customer.customer', {
                                 data: {
                                     id_crisp: user_id,
-                                    email: content,
+                                    email: email,
                                     nickname: nickname,
                                     ai_context: 1
                                 }

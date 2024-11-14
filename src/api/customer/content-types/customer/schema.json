@@ -23,8 +23,9 @@
     },
     "ai_context": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::ai-context.ai-context"
+      "relation": "manyToOne",
+      "target": "api::ai-context.ai-context",
+      "inversedBy": "customers"
     }
   }
 }
