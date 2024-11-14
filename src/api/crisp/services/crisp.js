@@ -133,7 +133,7 @@ module.exports = {
                                 from: from,
                                 id_customer: customer.id,
                                 content: content,
-                                crisp_fingerprint: fingerprint,
+                                crisp_fingerprint: fingerprint.toString(),
                                 crisp_session_id: session_id,
                                 origin: origin,
                             }
