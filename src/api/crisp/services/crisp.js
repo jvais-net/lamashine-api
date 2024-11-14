@@ -184,11 +184,14 @@ module.exports = {
                             }
                         });
 
+                        console.log("Thread in DB", threadInDb);
+
                         if (!threadInDb) {
                             try {
                                 const thread = await GPTClient.beta.threads.create();
 
                                 if (customer.ai_context) {
+                                    console.log("Context exists in customer", customer.ai_context);
                                     const context = await strapi.db.query('api::ai-context.ai-context').findOne({
                                         where: {
                                             id: customer.ai_context
@@ -196,6 +199,7 @@ module.exports = {
                                     });
 
                                     if (context) {
+                                        console.log("Context exists in DB", context);
                                         const assistant = await GPTClient.beta.assistants.create({
                                             model: 'gpt-4',
                                             instructions: context.content,
