@@ -552,6 +552,35 @@ export interface ApiAiContextAiContext extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAiThreadAiThread extends Struct.CollectionTypeSchema {
+  collectionName: 'ai_threads';
+  info: {
+    singularName: 'ai-thread';
+    pluralName: 'ai-threads';
+    displayName: 'Ai_Thread';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    crisp_session_id: Schema.Attribute.String;
+    openai_thread_id: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ai-thread.ai-thread'
+    > &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
   collectionName: 'customers';
   info: {
@@ -1075,6 +1104,7 @@ declare module '@strapi/strapi' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::about.about': ApiAboutAbout;
       'api::ai-context.ai-context': ApiAiContextAiContext;
+      'api::ai-thread.ai-thread': ApiAiThreadAiThread;
       'api::customer.customer': ApiCustomerCustomer;
       'api::global.global': ApiGlobalGlobal;
       'api::memory.memory': ApiMemoryMemory;

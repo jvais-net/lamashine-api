@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ai_threads",
+  "info": {
+    "singularName": "ai-thread",
+    "pluralName": "ai-threads",
+    "displayName": "Ai_Thread"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "crisp_session_id": {
+      "type": "string"
+    },
+    "openai_thread_id": {
+      "type": "string"
+    }
+  }
+}
