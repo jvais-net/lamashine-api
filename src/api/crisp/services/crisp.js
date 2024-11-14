@@ -208,16 +208,15 @@ module.exports = {
                                         content: content
                                     });
 
-                                    let run = await GPTClient.beta.threads.runs.create(thread.id, {
-                                        assistant_id: assistant.id,
-                                    });
-
-                                    while (run.status !== "completed") {
-                                        run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
-                                    }
+                                    let run;
+                                    do {
+                                        run = await GPTClient.beta.threads.runs.retrieve(thread.id, run?.id);
+                                    } while (run.status !== "completed");
 
                                     const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                                    const resMessage = messages.data[0].content[0];
+                                    const resMessage = messages.data[messages.data.length - 1].content[0];
+
+                                    console.log("Response message", resMessage);
 
                                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                                         type: 'text',
@@ -225,7 +224,6 @@ module.exports = {
                                         from: 'operator',
                                         origin: 'chat'
                                     });
-
                                 }
                             } catch (error) {
                                 console.error('Error creating thread or assistant:', error);
