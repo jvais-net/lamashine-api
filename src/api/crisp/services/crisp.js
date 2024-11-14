@@ -63,6 +63,7 @@ module.exports = {
                                     nickname: nickname,
                                 }
                             });
+                            
                         } catch (error) {
                             console.error('Error adding new people profile:', error);
                         }
@@ -111,15 +112,10 @@ module.exports = {
                         }
                     });
 
-                    const isContentEmail = isEmail(content);
-
-                    let email = content;
-
-                    if(!isContentEmail) {
-                        email = (await CrispClient.website.getPeopleProfile(process.env.CRISP_WEBSITE_ID, user_id)).email;
-                    }
-
                     if (!customerExists) {
+
+                        const email = CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id).email;
+
                         try {
                             await strapi.entityService.create('api::customer.customer', {
                                 data: {
