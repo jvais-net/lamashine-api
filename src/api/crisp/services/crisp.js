@@ -112,7 +112,7 @@ module.exports = {
 
                     if (!customerExists) {
 
-                        const email = CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id).email;
+                        const email = (await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id)).email;
 
                         try {
                             await strapi.entityService.create('api::customer.customer', {
@@ -137,10 +137,10 @@ module.exports = {
                     if (customer) {
 
                         if(!customer.email) {
-                            const email = CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id).email;
+                            const email = (await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id)).email;
 
                             try {
-                                await strapi.entityService.update('api::customer.customer', {
+                                await strapi.db.query('api::customer.customer').update({
                                     where: {
                                         id_crisp: user_id
                                     },
