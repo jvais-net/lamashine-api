@@ -103,22 +103,6 @@ module.exports = {
                             email: content
                         });
 
-                        console.log('Adding message to conversation');
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
-                            type: 'text',
-                            content: "Bonjour ! Comment puis-je vous aider ?",
-                            from: "operator",
-                            origin: "chat"
-                        });
-
-                        console.log('Adding message from user to conversation');
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, newConversation.session_id, {
-                            type: 'text',
-                            content: "Bonjour ! Je teste le chat.",
-                            from: "user",
-                            origin: "chat"
-                        });
-
                         //envoie mail brevo avec template
 
                         const mailer = new brevo.SendSmtpEmail();
