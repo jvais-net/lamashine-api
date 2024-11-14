@@ -112,14 +112,18 @@ module.exports = {
                     });
 
                     if (!customerExists) {
-                        await strapi.entityService.create('api::customer.customer', {
-                            data: {
-                                id_crisp: user_id,
-                                email: content,
-                                nickname: nickname,
-                                ai_context: 1
-                            }
-                        });
+                        try {
+                            await strapi.entityService.create('api::customer.customer', {
+                                data: {
+                                    id_crisp: user_id,
+                                    email: content,
+                                    nickname: nickname,
+                                    ai_context: 1
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Error creating customer:', error);
+                        }
                     }
 
                     const customer = await strapi.db.query('api::customer.customer').findOne({
@@ -129,17 +133,21 @@ module.exports = {
                     });
 
                     if (customer) {
-                        await strapi.entityService.create('api::message.message', {
-                            data: {
-                                type: type,
-                                from: from,
-                                id_customer: customer.id_crisp,
-                                content: content,
-                                crisp_fingerprint: fingerprint.toString(),
-                                crisp_session_id: session_id,
-                                origin: origin,
-                            }
-                        });
+                        try {
+                            await strapi.entityService.create('api::message.message', {
+                                data: {
+                                    type: type,
+                                    from: from,
+                                    id_customer: customer.id_crisp,
+                                    content: content,
+                                    crisp_fingerprint: fingerprint.toString(),
+                                    crisp_session_id: session_id,
+                                    origin: origin,
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Error creating message:', error);
+                        }
 
                         // @ts-ignore
                         const { OpenAI } = await import('openai');
@@ -152,81 +160,89 @@ module.exports = {
                             where: {
                                 crisp_session_id: session_id
                             }
-                        })
+                        });
 
-                        if(!threadInDb) {
-                            const thread = await GPTClient.beta.threads.create();
+                        if (!threadInDb) {
+                            try {
+                                const thread = await GPTClient.beta.threads.create();
 
-                            if(customer.ai_context) {
-                                const context = await strapi.db.query('api::ai-context.ai-context').findOne({
-                                    where: {
-                                        id: customer.ai_context
-                                    }
-                                });
-
-                                if(context) {
-                                    const assistant = await GPTClient.beta.assistants.create({
-                                        model: 'gpt-4',
-                                        instructions: context.content,
-                                    })
-
-                                    await strapi.entityService.create('api::ai-thread.ai-thread', {
-                                        data: {
-                                            openai_thread_id: thread.id,
-                                            crisp_session_id: session_id,
-                                            openai_assistant_id: assistant.id
+                                if (customer.ai_context) {
+                                    const context = await strapi.db.query('api::ai-context.ai-context').findOne({
+                                        where: {
+                                            id: customer.ai_context
                                         }
                                     });
 
-                                    await GPTClient.beta.threads.messages.create(thread.id, {
-                                        role: 'user',
-                                        content: content
-                                    });
+                                    if (context) {
+                                        const assistant = await GPTClient.beta.assistants.create({
+                                            model: 'gpt-4',
+                                            instructions: context.content,
+                                        });
 
-                                    let run = await GPTClient.beta.threads.runs.create(thread.id, {
-                                        assistant_id: assistant.id,
-                                    })
+                                        await strapi.entityService.create('api::ai-thread.ai-thread', {
+                                            data: {
+                                                openai_thread_id: thread.id,
+                                                crisp_session_id: session_id,
+                                                openai_assistant_id: assistant.id
+                                            }
+                                        });
 
-                                    while(run.status !== "completed") {
-                                        run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                        await GPTClient.beta.threads.messages.create(thread.id, {
+                                            role: 'user',
+                                            content: content
+                                        });
+
+                                        let run = await GPTClient.beta.threads.runs.create(thread.id, {
+                                            assistant_id: assistant.id,
+                                        });
+
+                                        while (run.status !== "completed") {
+                                            run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                        }
+
+                                        const messages = await GPTClient.beta.threads.messages.list(thread.id);
+                                        const resMessage = messages.data[0].content[0];
+
+                                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                                            type: 'text',
+                                            content: resMessage,
+                                            from: 'operator',
+                                            origin: 'chat'
+                                        });
                                     }
-
-                                    const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                                    const resMessage = messages.data[0].content[0];
-
-                                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                                        type: 'text',
-                                        content: resMessage,
-                                        from: 'operator',
-                                        origin: 'chat'
-                                    })
                                 }
+                            } catch (error) {
+                                console.error('Error creating thread or assistant:', error);
                             }
                         } else {
-                            const thread = await GPTClient.beta.threads.retrieve(threadInDb.openai_thread_id);
+                            try {
+                                const thread = await GPTClient.beta.threads.retrieve(threadInDb.openai_thread_id);
 
-                            await GPTClient.beta.threads.messages.create(thread.id, {
-                                role: 'user',
-                                content: content
-                            });
+                                await GPTClient.beta.threads.messages.create(thread.id, {
+                                    role: 'user',
+                                    content: content
+                                });
 
-                            let run = await GPTClient.beta.threads.runs.create(thread.id, {
-                                assistant_id: threadInDb.openai_assistant_id,
-                            })
+                                let run = await GPTClient.beta.threads.runs.create(thread.id, {
+                                    assistant_id: threadInDb.openai_assistant_id,
+                                });
 
-                            while(run.status !== "completed") {
-                                run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                while (run.status !== "completed") {
+                                    run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                }
+
+                                const messages = await GPTClient.beta.threads.messages.list(thread.id);
+                                const resMessage = messages.data[0].content[0];
+
+                                await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                                    type: 'text',
+                                    content: resMessage,
+                                    from: 'operator',
+                                    origin: 'chat'
+                                });
+                            } catch (error) {
+                                console.error('Error processing existing thread:', error);
                             }
-
-                            const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                            const resMessage = messages.data[0].content[0];
-
-                            await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                                type: 'text',
-                                content: resMessage,
-                                from: 'operator',
-                                origin: 'chat'
-                            })
                         }
                     }
                 } catch (error) {
