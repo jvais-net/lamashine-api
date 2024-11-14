@@ -137,6 +137,24 @@ module.exports = {
                     });
 
                     if (customer) {
+
+                        if(!customer.email) {
+                            const email = CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id).email;
+
+                            try {
+                                await strapi.entityService.update('api::customer.customer', {
+                                    where: {
+                                        id_crisp: user_id
+                                    },
+                                    data: {
+                                        email: email
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error updating customer email:', error);
+                            }
+                        }
+
                         try {
                             await strapi.entityService.create('api::message.message', {
                                 data: {
