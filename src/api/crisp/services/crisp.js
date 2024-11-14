@@ -117,7 +117,7 @@ module.exports = {
                                 id_crisp: user_id,
                                 email: content,
                                 nickname: nickname,
-                                ai_context: null
+                                ai_context: 1
                             }
                         });
                     }
