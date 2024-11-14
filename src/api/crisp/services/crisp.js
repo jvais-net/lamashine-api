@@ -94,7 +94,9 @@ module.exports = {
                             console.error('Error finding customer in database:', error);
                         }
                     }
-                    
+
+                    const uuid = uuidv4();
+
                     try {
                         const mailer = new brevo.SendSmtpEmail();
                         mailer.to = [{
@@ -103,13 +105,13 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?crisp_sid=${}`
+                            chatlink: `https://chat.lamashine.com?crisp_sid=${uuid}`
                         }
 
                         try {
                             await brevoInstance.sendTransacEmail(mailer);
 
-                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${uuidv4()}`);
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?crisp_sid=${uuid}`);
                         } catch (error) {
                             console.error('Error sending email:', error);
                         }
