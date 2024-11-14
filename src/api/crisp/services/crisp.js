@@ -39,7 +39,7 @@ module.exports = {
                 try {
                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                         type: 'text',
-                        content: "Veuillez renseigner votre adresse email pour continuer la conversation.",
+                        content: "Pour continuer la conversation, pouvez-vous m'indiquer votre adresse e-mail ?",
                         from: "operator",
                         origin: "chat"
                     });
@@ -118,7 +118,7 @@ module.exports = {
 
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
                             type: 'text',
-                            content: "Un email vous a été envoyé pour continuer la conversation.",
+                            content: "Merci ! Vous allez recevoir un e-mail avec un lien vous permettant de continuer la conversation. Pensez à vérifier vos spams.",
                             from: "operator",
                             origin: "chat"
                         });
