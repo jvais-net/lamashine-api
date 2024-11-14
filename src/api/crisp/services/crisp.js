@@ -246,7 +246,8 @@ module.exports = {
                                 }
 
                                 const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                                const resMessage = messages.data[0].content[0];
+                                // @ts-ignore
+                                const resMessage = messages.data[0].content[0].text.value;
 
                                 console.log("Response message", resMessage);
 
