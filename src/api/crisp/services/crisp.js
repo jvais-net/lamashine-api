@@ -105,13 +105,13 @@ module.exports = {
                         }];
                         mailer.templateId = 1;
                         mailer.params = {
-                            chatlink: `https://chat.lamashine.com?token=${uuid}`
+                            chatlink: `https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`
                         }
 
                         try {
                             await brevoInstance.sendTransacEmail(mailer);
 
-                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?token=${uuid}`);
+                            console.log(`Email sent to ${content} with chat link: https://chat.lamashine.com?token=${uuid}&email=${encodeURIComponent(content)}`);
                         } catch (error) {
                             console.error('Error sending email:', error);
                         }
