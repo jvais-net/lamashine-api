@@ -131,7 +131,8 @@ module.exports = {
                     const customer = await strapi.db.query('api::customer.customer').findOne({
                         where: {
                             id_crisp: user_id
-                        }
+                        },
+                        populate: { ai_context: true }
                     });
 
                     if (customer) {
