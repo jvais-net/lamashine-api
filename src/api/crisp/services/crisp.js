@@ -138,7 +138,7 @@ module.exports = {
                                 data: {
                                     type: type,
                                     from: from,
-                                    id_customer: customer.id_crisp,
+                                    id_customer: customer.id,
                                     content: content,
                                     crisp_fingerprint: fingerprint.toString(),
                                     crisp_session_id: session_id,
