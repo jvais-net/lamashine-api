@@ -34,7 +34,7 @@ module.exports = {
 
         if (from === 'user') {
             const isContentEmail = isEmail(content);
-            const isAuthenticated = await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id);
+            const isAuthenticated = (await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id)).segments.includes('authentifié');
 
             if (!isContentEmail && !isAuthenticated) {
                 try {
