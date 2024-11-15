@@ -120,7 +120,7 @@ module.exports = {
                                     id_crisp: user_id,
                                     email: email,
                                     nickname: nickname,
-                                    ai_context: 1
+                                    ai_context: null
                                 }
                             });
                         } catch (error) {
