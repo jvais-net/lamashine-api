@@ -31,6 +31,8 @@ module.exports = {
             return;
         }
 
+        console.log((await CrispClient.website.getConversation(process.env.CRISP_WEBSITE_ID, session_id)).isVerified);
+
         const isAuthenticated = (await CrispClient.website.getConversationMetas(process.env.CRISP_WEBSITE_ID, session_id)).segments.includes('authentifié');
 
         if (from === 'user') {
