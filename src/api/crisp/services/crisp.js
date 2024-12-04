@@ -233,36 +233,38 @@ module.exports = {
                                 console.error('Error creating thread or assistant:', error);
                             }
                         } else {
-                            try {
-                                const thread = await GPTClient.beta.threads.retrieve(threadInDb.openai_thread_id);
+                            if (customer.ai_context) {
+                                try {
+                                    const thread = await GPTClient.beta.threads.retrieve(threadInDb.openai_thread_id);
 
-                                await GPTClient.beta.threads.messages.create(thread.id, {
-                                    role: 'user',
-                                    content: content
-                                });
+                                    await GPTClient.beta.threads.messages.create(thread.id, {
+                                        role: 'user',
+                                        content: content
+                                    });
 
-                                let run = await GPTClient.beta.threads.runs.create(thread.id, {
-                                    assistant_id: threadInDb.openai_assistant_id,
-                                });
+                                    let run = await GPTClient.beta.threads.runs.create(thread.id, {
+                                        assistant_id: threadInDb.openai_assistant_id,
+                                    });
 
-                                while (run.status !== "completed") {
-                                    run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                    while (run.status !== "completed") {
+                                        run = await GPTClient.beta.threads.runs.retrieve(thread.id, run.id);
+                                    }
+
+                                    const messages = await GPTClient.beta.threads.messages.list(thread.id);
+                                    // @ts-ignore
+                                    const resMessage = messages.data[0].content[0].text.value;
+
+                                    console.log("Response message", resMessage);
+
+                                    await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
+                                        type: 'text',
+                                        content: resMessage,
+                                        from: 'operator',
+                                        origin: 'chat'
+                                    });
+                                } catch (error) {
+                                    console.error('Error processing existing thread:', error);
                                 }
-
-                                const messages = await GPTClient.beta.threads.messages.list(thread.id);
-                                // @ts-ignore
-                                const resMessage = messages.data[0].content[0].text.value;
-
-                                console.log("Response message", resMessage);
-
-                                await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, session_id, {
-                                    type: 'text',
-                                    content: resMessage,
-                                    from: 'operator',
-                                    origin: 'chat'
-                                });
-                            } catch (error) {
-                                console.error('Error processing existing thread:', error);
                             }
                         }
                     }
