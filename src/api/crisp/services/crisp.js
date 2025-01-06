@@ -55,7 +55,7 @@ module.exports = {
 
                     if (!customerAccountExists) {
                         try {
-                            const newProfile = await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
+                            await CrispClient.website.addNewPeopleProfile(process.env.CRISP_WEBSITE_ID, {
                                 email: content,
                                 person: {
                                     nickname: nickname,
@@ -120,7 +120,7 @@ module.exports = {
                                     id_crisp: user_id,
                                     email: email,
                                     nickname: nickname,
-                                    ai_context: null
+                                    ai_context: 1
                                 }
                             });
                         } catch (error) {
