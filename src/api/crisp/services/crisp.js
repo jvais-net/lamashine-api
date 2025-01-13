@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const brevo = require('sib-api-v3-sdk');
 const Crisp = require('crisp-api');
+const crypto = require('crypto');
 
 const { v4: uuidv4 } = require('uuid');
 const crisp = require('../controllers/crisp');
@@ -20,6 +21,12 @@ const brevoInstance = new brevo.TransactionalEmailsApi();
 CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
 const isEmail = (email) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email);
+
+const generateToken = (email) => {
+    const salt = process.env.API_TOKEN_SALT;
+
+    return crypto.createHash('sha256').update(email + salt).digest('hex');
+}
 
 module.exports = {
     processMessage: async (incomingMessage) => {
@@ -67,7 +74,7 @@ module.exports = {
                         }
                     }
 
-                    const uuid = uuidv4();
+                    const uuid = generateToken(content);
 
                     try {
                         const mailer = new brevo.SendSmtpEmail();
