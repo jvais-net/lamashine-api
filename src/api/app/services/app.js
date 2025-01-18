@@ -26,7 +26,7 @@ const generateOtp = () => {
 module.exports = {
     processEmail: async (email) => {
         try {
-            const otp = generateOtp();
+            const otp = generateOtp().toString();
 
             console.log(otp);
 
