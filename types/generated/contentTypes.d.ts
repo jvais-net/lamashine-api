@@ -753,6 +753,34 @@ export interface ApiOptionOption extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiOtpOtp extends Struct.CollectionTypeSchema {
+  collectionName: 'otps';
+  info: {
+    singularName: 'otp';
+    pluralName: 'otps';
+    displayName: 'OTP';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    code: Schema.Attribute.String;
+    isAlreadyUsed: Schema.Attribute.Boolean;
+    email: Schema.Attribute.Email;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::otp.otp'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface AdminPermission extends Struct.CollectionTypeSchema {
   collectionName: 'admin_permissions';
   info: {
@@ -1143,6 +1171,7 @@ declare module '@strapi/strapi' {
       'api::memory.memory': ApiMemoryMemory;
       'api::message.message': ApiMessageMessage;
       'api::option.option': ApiOptionOption;
+      'api::otp.otp': ApiOtpOtp;
       'admin::permission': AdminPermission;
       'admin::user': AdminUser;
       'admin::role': AdminRole;

@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "otps",
+  "info": {
+    "singularName": "otp",
+    "pluralName": "otps",
+    "displayName": "OTP",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "code": {
+      "type": "string"
+    },
+    "isAlreadyUsed": {
+      "type": "boolean"
+    },
+    "email": {
+      "type": "email"
+    }
+  }
+}

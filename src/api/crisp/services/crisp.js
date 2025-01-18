@@ -7,7 +7,6 @@ const Crisp = require('crisp-api');
 const crypto = require('crypto');
 
 const { v4: uuidv4 } = require('uuid');
-const crisp = require('../controllers/crisp');
 
 const defaultClient = brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
