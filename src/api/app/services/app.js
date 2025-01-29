@@ -128,6 +128,8 @@ module.exports = {
 
         if(customer) {
             return customer.drive_url ?? null;
+        } else {
+            return null;
         }
     }
 };
