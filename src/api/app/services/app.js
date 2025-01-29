@@ -111,5 +111,23 @@ module.exports = {
         })
 
         return generateToken(email)
+    },
+
+    getDriveUrl: async (email) => {
+        const existingCustomer = await strapi.db.query('api::customer.customer').findMany({
+            where: {
+                email: email
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            limit: 1
+        });
+
+        const customer = existingCustomer[0];
+
+        if(customer) {
+            return customer.drive_url ?? null;
+        }
     }
 };

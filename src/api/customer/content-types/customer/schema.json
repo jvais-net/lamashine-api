@@ -26,6 +26,9 @@
       "relation": "manyToOne",
       "target": "api::ai-context.ai-context",
       "inversedBy": "customers"
+    },
+    "drive_url": {
+      "type": "string"
     }
   }
 }

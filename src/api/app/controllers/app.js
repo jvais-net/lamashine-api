@@ -36,8 +36,9 @@ module.exports = {
             }
 
             const token = await strapi.service('api::app.app').proccessOtp(message.email, message.otp);
+            const driveUrl = await strapi.service('api::app.app').getDriveUrl(message.email);
 
-            return ctx.send({ message: 'Reminder processed', token }, 200);
+            return ctx.send({ message: 'Reminder processed', token, driveUrl: driveUrl }, 200);
         } catch (err) {
             console.log(err);
             return ctx.send(err, 500);

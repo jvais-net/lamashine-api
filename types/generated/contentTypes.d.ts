@@ -603,6 +603,7 @@ export interface ApiCustomerCustomer extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::ai-context.ai-context'
     >;
+    drive_url: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
