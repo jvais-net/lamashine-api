@@ -342,109 +342,144 @@ module.exports = {
     },
 
     processReminder: async () => {
-        try {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        if ((currentHour === 8 || currentHour === 18) && currentMinute === 30) {
+            console.log(`Il est ${currentHour === 8 ? '8h30' : '18h30'}`);
+            
+            const reminderMessage = await strapi.db.query('api::option.option').findOne({
+                where : {
+                    key: currentHour === 8 ? 'morningMessage' : 'eveningMessage'
+                }
+            })
+
+            if(!reminderMessage) return console.error('Reminder message not found');
+
             const customers = await strapi.db.query('api::customer.customer').find();
 
             for (const customer of customers) {
-                const customerId = customer.id;
-
-                const messages = await strapi.entityService.findMany('api::message.message', {
-                    filters: {
-                        id_customer: customerId,
-                        from: 'user'
-                    },
-                    sort: { createdAt: 'desc' },
-                    fields: ['createdAt'],
-                    populate: { customer: true }
-                });
-
-                if (messages.length > 0) {
-                    const lastMessage = messages[0];
-                    const lastMessageDate = new Date(lastMessage.createdAt);
-                    const currentDate = new Date();
-
-                    const differenceInTime = currentDate.getTime() - lastMessageDate.getTime();
-                    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-
-                    if (differenceInDays >= 3) {
-                        // @ts-ignore
-                        const { OpenAI } = await import('openai');
-
-                        const GPTClient = new OpenAI({
-                            apiKey: process.env.GPT_API_KEY
+                if(customer.id_crisp) {
+                    try {
+                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, customer.id_crisp, {
+                            type: 'text',
+                            content: reminderMessage.value,
+                            from: 'operator',
+                            origin: 'chat'
                         });
-
-                        const conversationExists = (await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}`, {
-                            headers: {
-                                "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
-                                "X-Crisp-Tier": "plugin"
-                            }
-                        })).status === 200;
-
-                        if (conversationExists) {
-                            const nextstep = await strapi.db.query('memory.memory').findOne({
-                                where: {
-                                    key: 'nextsteps',
-                                    id_customer: customerId
-                                },
-                                orderBy: {
-                                    createdAt: 'desc'
-                                }
-                            });
-
-                            if (nextstep) {
-                                const response = (await GPTClient.chat.completions.create({
-                                    messages: [
-                                        { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
-                                    ],
-                                    model: 'gpt-4',
-
-                                })).choices[0].message.content;
-
-                                try {
-                                    await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
-                                        method: 'POST',
-                                        headers: {
-                                            "Content-Type": "application/json",
-                                            "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
-                                            "X-Crisp-Tier": "plugin"
-                                        },
-                                        body: JSON.stringify({
-                                            type: 'text',
-                                            from: 'operator',
-                                            origin: 'chat',
-                                            content: response
-                                        })
-                                    });
-                                } catch (error) {
-                                    console.error('Error sending message:', error);
-                                }
-                            } else {
-                                try {
-                                    await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
-                                        method: 'POST',
-                                        headers: {
-                                            "Content-Type": "application/json",
-                                            "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
-                                            "X-Crisp-Tier": "plugin"
-                                        },
-                                        body: JSON.stringify({
-                                            type: 'text',
-                                            from: 'operator',
-                                            origin: 'chat',
-                                            content: "Bonjour ! Je voulais savoir si vous aviez eu le temps d'avancer sur notre projet. N'hésitez pas à me dire si vous avez besoin de quoi que ce soit. Bonne journée !"
-                                        })
-                                    });
-                                } catch (error) {
-                                    console.error('Error sending message:', error);
-                                }
-                            }
-                        }
+                    } catch (error) {
+                        console.error('Error sending reminder message:', error);
                     }
                 }
             }
-        } catch (error) {
-            console.log(error);
         }
-    },
+    }
+
+    // processReminder: async () => {
+    //     try {
+    //         const customers = await strapi.db.query('api::customer.customer').find();
+
+    //         for (const customer of customers) {
+    //             const customerId = customer.id;
+
+    //             const messages = await strapi.entityService.findMany('api::message.message', {
+    //                 filters: {
+    //                     id_customer: customerId,
+    //                     from: 'user'
+    //                 },
+    //                 sort: { createdAt: 'desc' },
+    //                 fields: ['createdAt'],
+    //                 populate: { customer: true }
+    //             });
+
+    //             if (messages.length > 0) {
+    //                 const lastMessage = messages[0];
+    //                 const lastMessageDate = new Date(lastMessage.createdAt);
+    //                 const currentDate = new Date();
+
+    //                 const differenceInTime = currentDate.getTime() - lastMessageDate.getTime();
+    //                 const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+    //                 if (differenceInDays >= 3) {
+    //                     // @ts-ignore
+    //                     const { OpenAI } = await import('openai');
+
+    //                     const GPTClient = new OpenAI({
+    //                         apiKey: process.env.GPT_API_KEY
+    //                     });
+
+    //                     const conversationExists = (await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}`, {
+    //                         headers: {
+    //                             "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+    //                             "X-Crisp-Tier": "plugin"
+    //                         }
+    //                     })).status === 200;
+
+    //                     if (conversationExists) {
+    //                         const nextstep = await strapi.db.query('memory.memory').findOne({
+    //                             where: {
+    //                                 key: 'nextsteps',
+    //                                 id_customer: customerId
+    //                             },
+    //                             orderBy: {
+    //                                 createdAt: 'desc'
+    //                             }
+    //                         });
+
+    //                         if (nextstep) {
+    //                             const response = (await GPTClient.chat.completions.create({
+    //                                 messages: [
+    //                                     { role: 'user', content: `Écris un SMS simple, sans mention de noms, pour relancer un client et lui demander s'il a appliqué nos instructions : "${nextstep.content}"` }
+    //                                 ],
+    //                                 model: 'gpt-4',
+
+    //                             })).choices[0].message.content;
+
+    //                             try {
+    //                                 await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
+    //                                     method: 'POST',
+    //                                     headers: {
+    //                                         "Content-Type": "application/json",
+    //                                         "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+    //                                         "X-Crisp-Tier": "plugin"
+    //                                     },
+    //                                     body: JSON.stringify({
+    //                                         type: 'text',
+    //                                         from: 'operator',
+    //                                         origin: 'chat',
+    //                                         content: response
+    //                                     })
+    //                                 });
+    //                             } catch (error) {
+    //                                 console.error('Error sending message:', error);
+    //                             }
+    //                         } else {
+    //                             try {
+    //                                 await fetch(`https://api.crisp.chat/v1/website/${process.env.CRISP_WEBSITE_ID}/conversation/${lastMessage.conversation_id}/message`, {
+    //                                     method: 'POST',
+    //                                     headers: {
+    //                                         "Content-Type": "application/json",
+    //                                         "Authorization": `Basic ${process.env.CRISP_IDENTIFIER}:${process.env.CRISP_KEY}`,
+    //                                         "X-Crisp-Tier": "plugin"
+    //                                     },
+    //                                     body: JSON.stringify({
+    //                                         type: 'text',
+    //                                         from: 'operator',
+    //                                         origin: 'chat',
+    //                                         content: "Bonjour ! Je voulais savoir si vous aviez eu le temps d'avancer sur notre projet. N'hésitez pas à me dire si vous avez besoin de quoi que ce soit. Bonne journée !"
+    //                                     })
+    //                                 });
+    //                             } catch (error) {
+    //                                 console.error('Error sending message:', error);
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // },
 };
