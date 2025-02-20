@@ -11,7 +11,7 @@ module.exports = {
     
             if (!reminderMessage) return console.error('Morning message not found');
     
-            const customers = await strapi.db.query('api::customer.customer').find();
+            const customers = await strapi.db.query('api::customer.customer').findMany();
     
             for (const customer of customers) {
                 if (customer.id_crisp) {
@@ -48,7 +48,7 @@ module.exports = {
     
             if (!reminderMessage) return console.error('Evening message not found');
     
-            const customers = await strapi.db.query('api::customer.customer').find();
+            const customers = await strapi.db.query('api::customer.customer').findMany();
     
             for (const customer of customers) {
                 if (customer.id_crisp) {
