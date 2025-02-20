@@ -13,9 +13,9 @@ const apiKey = defaultClient.authentications['api-key'];
 
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
-const CrispClient = new Crisp();
-
 const brevoInstance = new brevo.TransactionalEmailsApi();
+
+const CrispClient = new Crisp();
 
 CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
 
@@ -341,40 +341,40 @@ module.exports = {
         }
     },
 
-    processReminder: async () => {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
+    // processReminder: async () => {
+    //     const now = new Date();
+    //     const currentHour = now.getHours();
+    //     const currentMinute = now.getMinutes();
 
-        if ((currentHour === 8 || currentHour === 18) && currentMinute === 30) {
-            console.log(`Il est ${currentHour === 8 ? '8h30' : '18h30'}`);
+    //     if ((currentHour === 8 || currentHour === 18) && currentMinute === 30) {
+    //         console.log(`Il est ${currentHour === 8 ? '8h30' : '18h30'}`);
             
-            const reminderMessage = await strapi.db.query('api::option.option').findOne({
-                where : {
-                    key: currentHour === 8 ? 'morningMessage' : 'eveningMessage'
-                }
-            })
+    //         const reminderMessage = await strapi.db.query('api::option.option').findOne({
+    //             where : {
+    //                 key: currentHour === 8 ? 'morningMessage' : 'eveningMessage'
+    //             }
+    //         })
 
-            if(!reminderMessage) return console.error('Reminder message not found');
+    //         if(!reminderMessage) return console.error('Reminder message not found');
 
-            const customers = await strapi.db.query('api::customer.customer').find();
+    //         const customers = await strapi.db.query('api::customer.customer').find();
 
-            for (const customer of customers) {
-                if(customer.id_crisp) {
-                    try {
-                        await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, customer.id_crisp, {
-                            type: 'text',
-                            content: reminderMessage.value,
-                            from: 'operator',
-                            origin: 'chat'
-                        });
-                    } catch (error) {
-                        console.error('Error sending reminder message:', error);
-                    }
-                }
-            }
-        }
-    }
+    //         for (const customer of customers) {
+    //             if(customer.id_crisp) {
+    //                 try {
+    //                     await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, customer.id_crisp, {
+    //                         type: 'text',
+    //                         content: reminderMessage.value,
+    //                         from: 'operator',
+    //                         origin: 'chat'
+    //                     });
+    //                 } catch (error) {
+    //                     console.error('Error sending reminder message:', error);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     // processReminder: async () => {
     //     try {

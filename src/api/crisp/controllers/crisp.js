@@ -31,13 +31,13 @@ module.exports = {
         }
     },
 
-    processReminder: async (ctx) => {
-        try {
-            await strapi.service('api::crisp.crisp').processReminder();
+    // processReminder: async (ctx) => {
+    //     try {
+    //         await strapi.service('api::crisp.crisp').processReminder();
 
-            return ctx.send({ message: 'Reminder processed' }, 200);
-        } catch (err) {
-            return ctx.send(err, 500);
-        }
-    }
+    //         return ctx.send({ message: 'Reminder processed' }, 200);
+    //     } catch (err) {
+    //         return ctx.send(err, 500);
+    //     }
+    // }
 }
