@@ -8,25 +8,31 @@ module.exports = {
                     key: 'morningMessage'
                 }
             })
-    
+
             if (!reminderMessage) return console.error('Morning message not found');
-    
+
             const customers = await strapi.db.query('api::customer.customer').findMany();
-    
+            const alreadySent = [];
+
             for (const customer of customers) {
                 if (customer.id_crisp) {
-    
+
+                    if (alreadySent.includes(customer.id_crisp)) continue;
+
                     const CrispClient = new Crisp();
-                    
+
                     CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
-    
+
                     try {
+
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, customer.id_crisp, {
                             type: 'text',
                             content: reminderMessage.value,
                             from: 'operator',
                             origin: 'chat'
                         });
+
+                        alreadySent.push(customer.id_crisp);
                     } catch (error) {
                         console.error('Error sending reminder message:', error);
                     }
@@ -45,18 +51,21 @@ module.exports = {
                     key: 'eveningMessage'
                 }
             })
-    
+
             if (!reminderMessage) return console.error('Evening message not found');
-    
+
             const customers = await strapi.db.query('api::customer.customer').findMany();
-    
+            const alreadySent = [];
+
             for (const customer of customers) {
                 if (customer.id_crisp) {
-    
+
+                    if (alreadySent.includes(customer.id_crisp)) continue;
+
                     const CrispClient = new Crisp();
-                    
+
                     CrispClient.authenticateTier("plugin", process.env.CRISP_IDENTIFIER, process.env.CRISP_KEY);
-    
+
                     try {
                         await CrispClient.website.sendMessageInConversation(process.env.CRISP_WEBSITE_ID, customer.id_crisp, {
                             type: 'text',
@@ -64,6 +73,8 @@ module.exports = {
                             from: 'operator',
                             origin: 'chat'
                         });
+
+                        alreadySent.push(customer.id_crisp);
                     } catch (error) {
                         console.error('Error sending reminder message:', error);
                     }
